@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<link rel="stylesheet" href="app/fonts.css">
+<script src="app/qrcode.min.js"></script>
+<style>
+:root{--azul:#13213A;--azul2:#2B3E63;--rojo:#E11B22;--gris:#6E7480;--fondo:#F2F4F7;--linea:#DCE1E9;--ok:#1E7A4C;--ambar:#A86A12}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#0B1528;font-family:'Montserrat',sans-serif;color:var(--azul)}
+#stage{position:relative;width:1920px;height:1080px;overflow:hidden}
+.esc{position:absolute;inset:0;opacity:0;overflow:hidden}
+.claro{background:radial-gradient(circle at 15% 10%,#FFFFFF 0,#F2F4F7 55%,#E7EBF3 100%)}
+.oscuro{background:radial-gradient(circle at 70% 30%,#22355A 0,#13213A 50%,#0B1528 100%);color:#fff}
+.mono{font-family:'IBM Plex Mono',monospace}
+[data-in]{will-change:transform,opacity}
+/* Panel izquierdo */
+.izq{position:absolute;left:96px;top:150px;width:500px}
+.cap{font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--rojo);font-size:22px;letter-spacing:2px}
+.tit{font-size:50px;font-weight:800;line-height:1.08;letter-spacing:-1px;margin:10px 0 26px}
+.pts{display:flex;flex-direction:column;gap:16px}
+.pt{background:#fff;border:1px solid var(--linea);border-left:6px solid var(--azul);border-radius:12px;padding:14px 18px;font-size:22px;line-height:1.32;font-weight:500;box-shadow:0 6px 18px rgba(19,33,58,.06)}
+.pt b{font-weight:700}
+.pt.r{border-left-color:var(--rojo)}
+/* Marco de navegador */
+.marco{position:absolute;left:660px;top:150px;width:1180px;border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 30px 80px rgba(19,33,58,.28),0 0 0 1px rgba(19,33,58,.08)}
+.marco .bar{height:40px;background:#E7EBF3;display:flex;align-items:center;gap:8px;padding:0 16px}
+.marco .bar i{width:13px;height:13px;border-radius:50%;background:#C4CCD9}
+.marco .bar i:first-child{background:#E11B22}
+.marco .bar span{margin-left:16px;background:#fff;border-radius:7px;padding:5px 14px;font-size:14px;color:var(--gris);font-family:'IBM Plex Mono',monospace;flex:1}
+.vista{position:relative;overflow:hidden;background:#F2F4F7}
+.capa{position:absolute;left:0;top:0;transform-origin:0 0}
+.capa img{display:block}
+.hl{position:absolute;border:7px solid var(--rojo);border-radius:16px;box-shadow:0 0 0 9999px rgba(11,21,40,.2),0 0 30px rgba(225,27,34,.6)}
+/* Pie */
+#pie{position:absolute;left:0;right:0;bottom:0;height:64px;display:flex;align-items:center;gap:18px;padding:0 96px;z-index:5}
+#pie img{height:34px;border-radius:4px;background:#fff;padding:2px 6px}
+#pie .sec{font-size:17px;font-weight:600;letter-spacing:.4px}
+#pie .barra{position:absolute;left:0;bottom:0;height:6px;background:var(--rojo)}
+.chip{display:inline-block;font-size:18px;font-weight:700;padding:6px 14px;border-radius:30px;text-transform:uppercase;letter-spacing:.5px}
+.card{background:#fff;border:1px solid var(--linea);border-radius:18px;box-shadow:0 14px 40px rgba(19,33,58,.08)}
+.anillo{position:absolute;border-radius:50%;border:2px solid rgba(255,255,255,.12)}
+</style></head>
+<body><div id="stage"></div>
+<div id="pie"><img src="app/logo.jpg"><span class="sec" id="sec"></span><div class="barra" id="prog"></div></div>
+<script>
+const LOGO = 'app/logo.jpg';
+const S = 'shots/';
+/* ---------- utilidades ---------- */
+const ease = x => x <= 0 ? 0 : x >= 1 ? 1 : x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x+2, 3)/2;
+const easeOut = x => x <= 0 ? 0 : x >= 1 ? 1 : 1 - Math.pow(1-x, 3);
+const lerp = (a,b,p) => a + (b-a)*p;
+const pt = (t, html, r) => `<div class="pt${r?' r':''}" data-in="${t}" data-fx="left">${html}</div>`;
+function izq(cap, tit, pts){ return `<div class="izq"><div class="cap" data-in="0.2" data-fx="up">${cap}</div><div class="tit" data-in="0.35" data-fx="up">${tit}</div><div class="pts">${pts.join('')}</div></div>`; }
+// Marco con captura y cámara: k=[[t,cx,cy,zoom]], hl=[[tin,tout,x,y,w,h]]
+function marco(img, iw, ih, url, k, hl, opt){
+  opt = opt || {};
+  const fw = opt.w || 1180, fh = opt.h || 738;
+  return `<div class="marco" data-in="0.3" data-fx="right" style="${opt.left!=null?'left:'+opt.left+'px;':''}${opt.top!=null?'top:'+opt.top+'px;':''}width:${fw}px">
+    <div class="bar"><i></i><i></i><i></i><span>${url}</span></div>
+    <div class="vista" style="width:${fw}px;height:${fh}px"><div class="capa" data-cam='${JSON.stringify({k,iw,ih,fw,fh})}'>
+      <img src="${S+img}" width="${iw}" height="${ih}">
+      ${(hl||[]).map(h => `<div class="hl" data-in="${h[0]}" data-out="${h[1]}" data-fx="pulse" style="left:${h[2]-10}px;top:${h[3]-10}px;width:${h[4]+20}px;height:${h[5]+20}px"></div>`).join('')}
+    </div></div></div>`;
+}
+const URL_APP = 'boldatasat.github.io/activos';
+
+/* ---------- íconos ---------- */
+const ic = {
+  hoja:`<svg viewBox="0 0 64 64" width="84" height="84" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"><rect x="12" y="6" width="40" height="52" rx="5"/><path d="M12 22h40M12 34h40M12 46h40M28 22v36"/></svg>`,
+  motor:`<svg viewBox="0 0 64 64" width="84" height="84" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="M22 18l-12 14 12 14M42 18l12 14-12 14M36 12l-8 40"/></svg>`,
+  web:`<svg viewBox="0 0 64 64" width="84" height="84" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"><rect x="4" y="10" width="42" height="30" rx="3"/><path d="M16 50h18M25 40v10"/><rect x="42" y="22" width="18" height="32" rx="4" fill="#fff"/><path d="M49 49h4"/></svg>`,
+  qr:`<svg viewBox="0 0 64 64" width="84" height="84" fill="none" stroke="currentColor" stroke-width="3.5"><rect x="8" y="8" width="18" height="18" rx="2"/><rect x="38" y="8" width="18" height="18" rx="2"/><rect x="8" y="38" width="18" height="18" rx="2"/><path d="M38 38h6v6h-6zM50 38h6M38 50h6M50 50h6v6M44 44h6v6"/></svg>`,
+  candado:`<svg viewBox="0 0 64 64" width="44" height="44" fill="none" stroke="currentColor" stroke-width="4"><rect x="12" y="28" width="40" height="28" rx="5"/><path d="M20 28v-8a12 12 0 0124 0v8"/></svg>`,
+};
+
+/* ---------- escenas ---------- */
+const E = [];
+const esc = (d, sec, cls, html) => E.push({ d, sec, cls, html });
+
+// 1. Portada
+esc(8, '', 'oscuro', `
+  ${[260,420,600,800,1020].map((r,i)=>`<div class="anillo" data-in="${0.1+i*.15}" data-fx="ring" style="width:${r*2}px;height:${r*2}px;left:${1560-r}px;top:${190-r}px"></div>`).join('')}
+  <div style="position:absolute;left:0;right:0;top:170px;text-align:center">
+    <div data-in="0.3" data-fx="zoom" style="display:inline-block;background:#fff;border-radius:22px;padding:30px 46px;box-shadow:0 30px 90px rgba(0,0,0,.4)"><img src="${LOGO}" style="width:560px;display:block"></div>
+    <div data-in="1.4" data-fx="up" style="margin-top:56px;font-size:24px;letter-spacing:6px;color:#AEB8CC;font-weight:600">PRESENTA</div>
+    <div data-in="1.8" data-fx="up" style="margin-top:14px;font-size:66px;font-weight:900;letter-spacing:-1.5px">Sistema de Control de Activos</div>
+    <div data-in="2.2" data-fx="up" style="margin-top:6px;font-size:40px;font-weight:600;color:#fff"><span style="color:var(--rojo)">Activos fijos</span> e <span style="color:var(--rojo)">inventarios</span>, con códigos QR</div>
+    <div data-in="3" data-fx="fade" style="margin-top:34px;font-size:22px;color:#AEB8CC">Guía de funcionamiento para el personal</div>
+  </div>`);
+
+// 2. Por qué
+const tarjeta = (t, n, ico, tit, txt) => `<div class="card" data-in="${t}" data-fx="up" style="width:500px;padding:40px 38px;border-top:8px solid ${n%2?'var(--rojo)':'var(--azul)'}">
+  <div style="color:var(--azul);width:84px">${ico}</div><div style="font-size:31px;font-weight:800;margin:18px 0 12px;line-height:1.15">${tit}</div><div style="font-size:22px;color:#3A4A66;line-height:1.4">${txt}</div></div>`;
+esc(11, 'Introducción', 'claro', `
+  <div style="position:absolute;left:96px;top:110px"><div class="cap" data-in="0.2" data-fx="up">¿PARA QUÉ SIRVE?</div>
+  <div class="tit" data-in="0.4" data-fx="up" style="font-size:56px">Un solo sistema para saber qué tenemos,<br>dónde está y cuánto vale</div></div>
+  <div style="position:absolute;left:96px;top:420px;display:flex;gap:34px">
+    ${tarjeta(1.4, 0, ic.qr, 'Cada bien identificado', 'Todo activo fijo recibe un <b>código automático</b> y una <b>etiqueta QR</b> que abre su ficha desde cualquier celular.')}
+    ${tarjeta(2.4, 1, ic.hoja, 'Valores contables al día', 'Calcula la <b>depreciación</b> según el DS 24051 y la <b>actualización por UFV</b>, sin fórmulas manuales.')}
+    ${tarjeta(3.4, 2, ic.motor, 'Inventario controlado', 'Entradas, salidas, ajustes y traspasos en un <b>kárdex valorado</b> por promedio ponderado.')}
+  </div>`);
+
+// 3. Cómo funciona
+const nodo = (t, x, ico, tit, txt, rojo) => `<div data-in="${t}" data-fx="zoom" style="position:absolute;left:${x}px;top:330px;width:330px;text-align:center">
+  <div style="width:170px;height:170px;margin:0 auto;border-radius:50%;background:${rojo?'var(--rojo)':'var(--azul)'};color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 18px 40px rgba(19,33,58,.25)">${ico}</div>
+  <div style="font-size:30px;font-weight:800;margin-top:26px">${tit}</div><div style="font-size:21px;color:#3A4A66;margin-top:10px;line-height:1.4">${txt}</div></div>`;
+const flecha = (t, x) => `<svg data-in="${t}" data-fx="draw" style="position:absolute;left:${x}px;top:395px" width="120" height="40" viewBox="0 0 120 40"><path d="M4 20H108M92 6l16 14-16 14" fill="none" stroke="#E11B22" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" pathLength="1"/></svg>`;
+esc(13, 'Cómo funciona', 'claro', `
+  <div style="position:absolute;left:96px;top:110px"><div class="cap" data-in="0.2" data-fx="up">CÓMO FUNCIONA</div>
+  <div class="tit" data-in="0.4" data-fx="up">Cuatro piezas que trabajan juntas</div></div>
+  ${nodo(1.0, 70, ic.hoja, 'Google Sheets', 'La <b>base de datos</b>: activos, kárdex, UFV, usuarios y bitácora.')}
+  ${flecha(2.0, 405)}
+  ${nodo(2.4, 530, ic.motor, 'Apps Script', 'El <b>motor</b>: calcula, valida y controla los permisos.')}
+  ${flecha(3.4, 865)}
+  ${nodo(3.8, 990, ic.web, 'Aplicación web', 'Funciona en la <b>computadora</b> y en el <b>celular</b>.')}
+  ${flecha(4.8, 1325)}
+  ${nodo(5.2, 1450, ic.qr, 'Etiqueta QR', 'Pegada en el bien, abre su <b>ficha</b> al escanearla.', true)}
+  <div data-in="7" data-fx="up" style="position:absolute;left:96px;right:96px;top:800px;text-align:center;font-size:25px;background:#fff;border:1px solid var(--linea);border-radius:14px;padding:22px">Todo lo que se registra en la aplicación se guarda al instante en la hoja de cálculo de la empresa.</div>`);
+
+// 4. Ingreso y roles
+const rol = (t, tit, col, txt) => `<div class="card" data-in="${t}" data-fx="left" style="padding:18px 22px;border-left:8px solid ${col};margin-bottom:14px"><div style="font-size:24px;font-weight:800">${tit}</div><div style="font-size:19px;color:#3A4A66;margin-top:4px;line-height:1.35">${txt}</div></div>`;
+esc(14, 'Ingreso y permisos', 'claro', `
+  ${izq('01 · INGRESO', 'Usuario, PIN<br>y tres roles', [])}
+  <div style="position:absolute;left:96px;top:330px;width:500px">
+    ${rol(4, 'Administrador', 'var(--rojo)', 'Todo, además de corregir fecha y costo, y <b>dar de baja</b> activos.')}
+    ${rol(5.2, 'Editor', 'var(--azul)', 'Registra y edita activos, verifica existencias y registra movimientos.')}
+    ${rol(6.4, 'Consulta', '#9AA5B8', 'Solo puede ver la información.')}
+    <div data-in="8.5" data-fx="up" style="display:flex;gap:14px;align-items:center;font-size:19px;color:#3A4A66;margin-top:8px"><span style="color:var(--rojo)">${ic.candado}</span><span>Tras <b>5 intentos fallidos</b> el usuario se bloquea 15 minutos. No comparta su PIN.</span></div>
+  </div>
+  ${marco('01_login.png', 2160, 1350, URL_APP, [[0,1080,675,1],[1.5,1080,675,1],[3.2,1080,610,1.75],[14,1080,610,1.8]], [[2.6,7.5,795,520,570,330]])}`);
+
+// 5. Lista de activos
+esc(16, 'Activos fijos', 'claro', `
+  ${izq('02 · ACTIVOS FIJOS', 'La lista de<br>activos', [
+    pt(1.8, 'Arriba, los totales: <b>activos vigentes</b>, costo actualizado, <b>valor en libros</b> y equipos en comodato.'),
+    pt(6, 'Busque por <b>código, serie o responsable</b> y filtre por ubicación, categoría o estado.'),
+    pt(10.2, 'Toque cualquier fila para abrir la <b>ficha completa</b> del activo.', 1)])}
+  ${marco('02_activos.png', 2160, 1350, URL_APP, [[0,1080,675,1],[1.6,1080,675,1],[2.8,1080,395,1.22],[5.4,1080,395,1.22],[6.6,1080,505,1.22],[9.6,1080,505,1.22],[10.8,1080,880,1.12],[16,1080,880,1.12]],
+    [[3.0,5.6,222,335,1716,120],[6.8,9.8,222,477,1716,64],[11.2,15,222,822,1716,94]])}`);
+
+// 6. Nuevo activo
+esc(17, 'Registrar un activo', 'claro', `
+  ${izq('03 · REGISTRO', 'Registrar un<br>activo nuevo', [
+    pt(1.6, 'La <b>categoría</b> define el código automático (ECO-0004, RTC-0003…) y su vida útil.'),
+    pt(5.8, 'Si la ubicación es <b>En comodato</b>, se piden el cliente y su dirección.'),
+    pt(9.4, 'Fecha y <b>costo de adquisición sin IVA</b> (crédito fiscal), con transporte e instalación.'),
+    pt(13, 'Adjunte una <b>foto</b>: desde el celular se abre la cámara directamente.', 1)])}
+  ${marco('04_nuevo.png', 2160, 1532, URL_APP+' · Nuevo activo', [[0,1080,766,1],[1.4,1080,766,1],[2.6,1080,560,1.15],[5.4,1080,560,1.15],[6.4,1080,800,1.15],[9,1080,800,1.15],[10,1080,1000,1.15],[17,1080,1000,1.15]],
+    [[2.8,5.6,248,382,543,80],[6.6,9.2,248,712,1665,100],[10.2,12.8,248,830,1125,100],[10.2,12.8,248,1225,1665,95],[13.2,16.5,1369,950,545,90]])}`);
+
+// 7. Ficha
+esc(14, 'La ficha del activo', 'claro', `
+  ${izq('04 · FICHA', 'Toda la historia<br>en una ficha', [
+    pt(2.4, '<b>Foto</b>, código y estado: Operativo, En mantenimiento, En desuso o Dado de baja.'),
+    pt(5.4, 'El <b>QR de la ficha</b> es el mismo que se imprime en la etiqueta.'),
+    pt(9, 'Datos de compra: <b>proveedor, factura, fecha y costo</b>, más el responsable y la ubicación.', 1)])}
+  ${marco('05_ficha.png', 2160, 2508, URL_APP+'/?c=ECO-0001', [[0,1080,600,1],[1.8,1080,600,1],[3,470,660,1.75],[8,470,660,1.75],[9.2,1330,640,1.5],[14,1330,640,1.5]],
+    [[3.2,5.2,221,306,480,363],[5.4,8.2,221,691,480,313],[9.4,13.6,726,306,1205,670]])}`);
+
+// 8. Vida útil
+const cats = [['Edificaciones',40],['Muebles y enseres de oficina',10],['Maquinaria en general',8],['Equipos e instalaciones',8],['Vehículos automotores',5],['Herramientas en general',4],['Equipos de computación',4],['Routers en comodato',4],['Terrenos',0]];
+esc(13, 'Depreciación', 'claro', `
+  <div style="position:absolute;left:96px;top:110px"><div class="cap" data-in="0.2" data-fx="up">05 · DEPRECIACIÓN</div>
+  <div class="tit" data-in="0.4" data-fx="up">Vida útil según<br>el DS 24051</div>
+  <div data-in="0.8" data-fx="up" style="font-size:23px;color:#3A4A66;max-width:560px;line-height:1.45">Cada categoría tiene su vida útil. El sistema deprecia <b>en línea recta, mes a mes</b>, desde el mes de compra. Los <b>terrenos no se deprecian</b>.<br><br>Los coeficientes están en la hoja <b>Parámetros</b> y el administrador puede ajustarlos.</div></div>
+  <div class="card" data-in="1" data-fx="right" style="position:absolute;left:780px;top:130px;width:1044px;padding:30px 40px">
+    ${cats.map((c,i)=>`<div data-in="${1.4+i*.35}" data-fx="left" style="display:grid;grid-template-columns:380px 1fr 150px;align-items:center;gap:20px;padding:12px 0;border-bottom:1px solid #EDF0F5;font-size:23px;font-weight:600">
+      <span>${c[0]}</span><span style="height:22px;background:#E7EBF3;border-radius:11px;overflow:hidden"><i data-bar="${c[1]/40}" data-in="${1.6+i*.35}" style="display:block;height:100%;width:0;border-radius:11px;background:${c[1]?'linear-gradient(90deg,#13213A,#2B3E63 80%,#E11B22)':'#ccc'}"></i></span>
+      <span class="mono" style="text-align:right;font-size:24px">${c[1]?c[1]+' años':'No aplica'}</span></div>`).join('')}
+  </div>`);
+
+// 9. Cálculo
+const paso = (t, n, tit, form, ej) => `<div class="card" data-in="${t}" data-fx="left" style="padding:16px 22px;margin-bottom:14px;border-left:8px solid ${n==3?'var(--rojo)':'var(--azul)'}">
+  <div style="font-size:15px;font-weight:700;letter-spacing:1px;color:var(--gris)">PASO ${n} · ${tit}</div><div style="font-size:19px;font-weight:600;margin:4px 0">${form}</div><div class="mono" style="font-size:21px;font-weight:600;color:var(--rojo)">${ej}</div></div>`;
+esc(18, 'Depreciación', 'claro', `
+  <div style="position:absolute;left:96px;top:130px;width:520px"><div class="cap" data-in="0.2" data-fx="up">05 · DEPRECIACIÓN</div>
+  <div class="tit" data-in="0.35" data-fx="up" style="font-size:44px">Así calcula el valor en libros</div>
+    ${paso(2, 1, 'ACTUALIZACIÓN POR UFV', 'Costo × UFV de la fecha de cálculo ÷ UFV de la compra', '7.850,00 × 1,04120 = 8.173,42')}
+    ${paso(6, 2, 'DEPRECIACIÓN ACUMULADA', '(Costo actualizado − residual) × meses ÷ vida útil en meses', '8.173,42 × 31 ÷ 48 = 5.278,67')}
+    ${paso(10, 3, 'VALOR EN LIBROS', 'Costo actualizado − depreciación acumulada', '8.173,42 − 5.278,67 = 2.894,75')}
+  </div>
+  ${marco('05_ficha.png', 2160, 2508, URL_APP+'/?c=ECO-0001', [[0,1328,1204,1.1],[1.5,1328,1204,1.62],[18,1328,1204,1.66]],
+    [[2.2,5.6,750,1170,1160,100],[2.2,5.6,1040,1170,290,100],[6.2,9.6,750,1270,290,100],[10.2,17,1046,1270,276,95]], {left:680,w:1140,h:713})}
+  <div data-in="13" data-fx="up" style="position:absolute;left:680px;top:900px;width:1140px;font-size:20px;color:#3A4A66">La <b>UFV</b> se registra en la hoja UFV; si falta la del día de compra, se usa la última anterior y la ficha lo avisa.</div>`);
+
+// 10. Etiquetas
+esc(15, 'Etiquetas QR', 'claro', `
+  ${izq('06 · ETIQUETAS QR', 'Imprimir las<br>etiquetas', [
+    pt(1.6, 'En la lista, <b>marque las casillas</b> de los activos y presione <b>Imprimir etiquetas QR</b>.'),
+    pt(5.6, 'Hoja <b>tamaño carta</b> con el logotipo, el QR y el código de cada bien.'),
+    pt(9.6, 'Tres tamaños: <b>pequeña, mediana o grande</b>. Imprima al 100 % y recorte por las guías.', 1)])}
+  ${marco('03_seleccion.png', 2160, 1350, URL_APP, [[0,1080,675,1],[4,1080,675,1]], [[1.8,4.4,232,630,40,410]], {top:150})}
+  <div data-in="5" data-fx="zoom" style="position:absolute;left:660px;top:150px">${marco('06_etiquetas.png', 2160, 1350, URL_APP+' · Etiquetas', [[0,1080,675,1],[0.8,1080,594,1.55],[8.2,1080,594,1.55],[9.2,1250,430,1.55],[15,1250,430,1.55]],
+    [[1.4,8,469,335,1222,518],[9.6,14.5,1173,248,285,61]], {left:0,top:0}).replace('data-in="0.3" data-fx="right"','')}</div>`);
+
+// 11. Escaneo
+esc(16, 'Escanear el QR', 'claro', `
+  ${izq('07 · ESCANEO', 'Escanear con<br>el celular', [
+    pt(3.5, 'Con la cámara del celular, apunte a la etiqueta: se abre la <b>ficha pública</b>.'),
+    pt(7.5, 'Muestra datos básicos, <b>sin costos ni datos del cliente</b>.'),
+    pt(11, 'El personal toca <b>Soy personal autorizado</b>, ingresa y ve la ficha completa.', 1)])}
+  <div data-in="0.6" data-fx="zoom" style="position:absolute;left:700px;top:250px;width:380px;background:#fff;border:2px dashed #C9C2B3;border-top:12px solid var(--rojo);border-radius:12px;padding:26px;text-align:center;box-shadow:0 20px 50px rgba(19,33,58,.15)">
+    <img src="${LOGO}" style="width:62%"><div id="qrDemo" style="width:250px;margin:14px auto 0;position:relative"></div>
+    <div class="mono" style="font-size:28px;font-weight:600;margin-top:12px">RTC-0001</div><div style="font-size:16px;color:#444">Router ONT doble banda</div>
+    <div data-scan="1" style="position:absolute;left:20px;right:20px;height:4px;background:var(--rojo);box-shadow:0 0 18px var(--rojo);top:120px;opacity:0"></div>
+  </div>
+  <div data-in="1.2" data-fx="right" style="position:absolute;left:1260px;top:110px;width:400px;height:820px;background:#0B1528;border-radius:58px;padding:16px;box-shadow:0 40px 90px rgba(19,33,58,.35)">
+    <div style="position:relative;width:368px;height:788px;border-radius:44px;overflow:hidden;background:#F2F4F7">
+      <div class="capa" data-cam='${JSON.stringify({k:[[0,585,1266,1],[4.5,585,1266,1],[4.5,585,1266,1],[9.5,585,1700,1],[16,585,1700,1]],iw:1170,ih:2532,fw:368,fh:788})}'><img src="${S}10_publica.png" width="1170" height="2532"></div>
+      <div data-out="3.2" data-in="-1" data-fx="fade" style="position:absolute;inset:0;background:#000;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;flex-direction:column;gap:20px"><div style="width:220px;height:220px;border:4px solid #fff;border-radius:24px"></div>Escaneando…</div>
+      <div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);width:120px;height:30px;background:#0B1528;border-radius:20px"></div>
+    </div></div>
+  <svg data-in="2.6" data-fx="draw" style="position:absolute;left:1095px;top:500px" width="150" height="40" viewBox="0 0 150 40"><path d="M4 20H138M122 6l16 14-16 14" fill="none" stroke="#E11B22" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" pathLength="1"/></svg>`);
+
+// 12. Verificación y bitácora
+esc(15, 'Verificación y bitácora', 'claro', `
+  ${izq('08 · CONTROL', 'Verificación física<br>y bitácora', [
+    pt(1.6, '<b>Verificar existencia</b>: elija dónde está físicamente el bien y registre.'),
+    pt(5.4, 'El sistema compara con la ubicación registrada: <b>Coincide Sí / No</b>.'),
+    pt(9.4, 'Cada cambio queda en el <b>historial</b>: fecha, campo, antes, después y usuario.', 1)])}
+  ${marco('05_ficha.png', 2160, 2508, URL_APP+'/?c=ECO-0001', [[0,460,1235,1.6],[4.6,460,1235,1.6],[5.6,1330,1570,1.5],[8.8,1330,1570,1.5],[9.8,1330,1895,1.5],[15,1330,1895,1.5]],
+    [[1.6,4.8,221,1029,480,411],[5.8,9,726,1425,1205,290],[10,14.5,726,1750,1205,290]])}`);
+
+// 13. Baja
+esc(10, 'Dar de baja', 'claro', `
+  ${izq('09 · BAJA', 'Dar de baja<br>un activo', [
+    pt(1.4, 'Solo el <b>administrador</b> puede hacerlo, indicando fecha y motivo: venta, robo, obsolescencia…'),
+    pt(4.6, 'El activo <b>deja de depreciarse</b>, ya no se puede editar y conserva todo su historial.', 1)])}
+  ${marco('05_ficha.png', 2160, 2508, URL_APP+'/?c=ECO-0001', [[0,1330,1900,1.3],[1.4,1330,2263,1.55],[10,1330,2263,1.6]], [[2,9.5,726,2118,1205,291]])}`);
+
+// 14. Separador inventarios
+esc(6, 'Inventarios', 'oscuro', `
+  ${[300,500,720].map((r,i)=>`<div class="anillo" data-in="${i*.15}" data-fx="ring" style="width:${r*2}px;height:${r*2}px;left:${960-r}px;top:${540-r}px"></div>`).join('')}
+  <div style="position:absolute;left:0;right:0;top:380px;text-align:center">
+    <div class="cap" data-in="0.3" data-fx="up" style="color:#FF6B70">SEGUNDA PARTE</div>
+    <div data-in="0.6" data-fx="zoom" style="font-size:96px;font-weight:900;letter-spacing:-2px;margin-top:10px">Inventarios</div>
+    <div data-in="1.2" data-fx="up" style="font-size:30px;color:#AEB8CC;margin-top:10px">Materiales y repuestos: cable, conectores, routers nuevos…</div></div>`);
+
+// 15. Lista inventario
+esc(14, 'Inventarios', 'claro', `
+  ${izq('10 · INVENTARIOS', 'Existencias<br>al instante', [
+    pt(1.8, 'Total de ítems, <b>valor del inventario</b> y cuántos hay que reponer.'),
+    pt(6, 'Situación de cada ítem: <span class="chip" style="background:#E2F2E9;color:#1E7A4C;font-size:15px;padding:3px 10px">Normal</span> <span class="chip" style="background:#FBEBC4;color:#A86A12;font-size:15px;padding:3px 10px">Reponer</span> <span class="chip" style="background:#FDE3E4;color:#B3171D;font-size:15px;padding:3px 10px">Sin stock</span>'),
+    pt(9.6, 'Se marca <b>Reponer</b> cuando el stock llega al <b>mínimo</b> definido para el ítem.', 1)])}
+  ${marco('07_inventario.png', 2160, 1350, URL_APP+' · Inventarios', [[0,1080,675,1],[1.6,1080,675,1],[2.8,1080,395,1.18],[5.4,1080,395,1.18],[6.4,1080,880,1.12],[14,1080,880,1.12]],
+    [[3,5.6,222,335,1716,120],[6.6,9.4,1745,628,140,540],[9.8,13.6,222,707,1716,94],[9.8,13.6,222,893,1716,94]])}`);
+
+// 16. Movimientos
+const tipo = (t, n, c, d) => `<div class="card" data-in="${t}" data-fx="up" style="padding:16px 18px;border-top:6px solid ${c}"><div style="font-size:22px;font-weight:800">${n}</div><div style="font-size:16px;color:#3A4A66;margin-top:6px;line-height:1.35">${d}</div></div>`;
+esc(17, 'Movimientos', 'claro', `
+  <div style="position:absolute;left:96px;top:110px;width:500px"><div class="cap" data-in="0.2" data-fx="up">11 · MOVIMIENTOS</div>
+  <div class="tit" data-in="0.35" data-fx="up">Registrar<br>movimientos</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    ${tipo(1.4,'Entrada','var(--ok)','Compra. Exige <b>costo unitario</b> y <b>factura o nota</b>.')}
+    ${tipo(2.2,'Salida','var(--rojo)','Instalación o consumo. Sale al costo promedio.')}
+    ${tipo(3.0,'Ajustes + / −','var(--ambar)','Diferencias del conteo físico. Exigen <b>motivo</b>.')}
+    ${tipo(3.8,'Traspaso','var(--azul)','Mueve stock de un depósito a otro.')}
+  </div>
+  <div class="pt r" data-in="11" data-fx="up" style="margin-top:16px;font-size:20px">El sistema <b>no permite</b> sacar más de lo que hay en el depósito ni registrar fechas futuras.</div></div>
+  ${marco('08_movimiento.png', 2160, 1350, URL_APP+' · Movimiento', [[0,1080,675,1],[4.4,1080,675,1],[5.4,1080,640,1.14],[17,1080,640,1.14]],
+    [[5.6,8,248,382,543,80],[8.2,10.8,248,598,1100,100],[11.2,16.5,248,834,1665,64]])}`);
+
+// 17. Kárdex
+esc(16, 'Kárdex', 'claro', `
+  ${izq('12 · KÁRDEX', 'Kárdex físico<br>valorado', [
+    pt(1.8, 'Cada ítem muestra su historia: entradas, salidas y traspasos con <b>saldo en cantidad y en Bs</b>.'),
+    pt(6.4, '<b>Promedio ponderado</b>: tras la compra del 02/09,<br><span class="mono" style="color:var(--rojo);font-weight:600">36.640,00 ÷ 68 = 538,82</span> por unidad.'),
+    pt(11, 'Stock por <b>depósito</b>, siempre actualizado.', 1)])}
+  ${marco('09_kardex.png', 2160, 1350, URL_APP+' · Kárdex INV-0003', [[0,1080,675,1],[1.4,1080,675,1],[2.4,1080,935,1.12],[10.4,1080,935,1.12],[11.4,1080,540,1.12],[16,1080,540,1.12]],
+    [[2.6,6,222,740,1716,445],[6.6,10.2,222,926,1716,84],[11.6,15.4,1745,475,192,134]])}`);
+
+// 18. Hoja de cálculo
+const hojas = ['Activos','Depreciación','Inventario','Kárdex','Existencias','Verificaciones','Bitácora','Parámetros','UFV','Usuarios'];
+const menu = ['Recalcular depreciación y existencias','Asignar códigos y PIN faltantes','—','Crear o cambiar PIN de un usuario','Abrir la aplicación','—','Instalar o reparar la estructura'];
+esc(15, 'Hoja de cálculo', 'claro', `
+  ${izq('13 · ADMINISTRACIÓN', 'La hoja de<br>cálculo', [
+    pt(1.6, 'Diez hojas ordenadas, con <b>reportes de depreciación y existencias</b> listos para imprimir.'),
+    pt(5.6, 'El menú <b>Control de activos</b> recalcula, asigna códigos y gestiona los PIN.'),
+    pt(9.8, 'El administrador mantiene al día la <b>UFV</b>, los <b>parámetros</b> y los <b>usuarios</b>.', 1)])}
+  <div class="marco" data-in="0.3" data-fx="right" style="height:780px">
+    <div class="bar"><i></i><i></i><i></i><span>docs.google.com/spreadsheets · Control de activos</span></div>
+    <div style="display:flex;gap:26px;padding:12px 22px;font-size:17px;color:#3A4A66;border-bottom:1px solid var(--linea)">
+      <span>Archivo</span><span>Editar</span><span>Ver</span><span>Insertar</span><span>Formato</span><span>Datos</span><span>Herramientas</span>
+      <span data-in="5.2" data-fx="pulsebg" style="font-weight:700;color:var(--azul);padding:0 8px;border-radius:6px">Control de activos</span></div>
+    <div style="display:grid;grid-template-columns:70px repeat(6,1fr);font-size:16px">
+      ${['','A · Código','B · Categoría','C · Descripción','G · Ubicación','K · Estado','M · Costo (Bs)'].map(h=>`<div style="background:#13213A;color:#fff;padding:10px;font-weight:700">${h}</div>`).join('')}
+      ${[['ECO-0001','Equipos de computación','Laptop para contabilidad','Oficina Central','Operativo','7.850,00'],['ECO-0002','Equipos de computación','Servidor de monitoreo','Oficina Central','Operativo','18.400,00'],['EQI-0001','Equipos e instalaciones','OLT de fibra óptica','Depósito Río Seco','Operativo','42.600,00'],['HER-0001','Herramientas en general','Empalmadora de fibra','Depósito Busch','En mantenimiento','23.900,00'],['RTC-0001','Routers en comodato','Router ONT doble banda','En comodato','Operativo','540,00'],['RTC-0002','Routers en comodato','Router ONT doble banda','En comodato','Operativo','540,00'],['VEH-0001','Vehículos automotores','Camioneta de instalaciones','Casa José','Operativo','245.000,00'],['MUE-0001','Muebles y enseres','Escritorio ejecutivo en L','Oficina Central','Operativo','2.350,00'],['EQI-0002','Equipos e instalaciones','Switch 24 puertos','Depósito Nantes','Operativo','3.120,00'],['ECO-0003','Equipos de computación','Impresora multifuncional','Oficina Central','En desuso','2.190,00']]
+        .map((r,i)=>[String(i+2)].concat(r).map((c,j)=>`<div style="padding:9px 10px;border-bottom:1px solid #EDF0F5;border-right:1px solid #EDF0F5;${j==0?'background:#F2F4F7;color:#888;text-align:center':''}${j==1?'font-family:IBM Plex Mono,monospace;font-weight:600':''}${j==6?';text-align:right;font-family:IBM Plex Mono,monospace':''};white-space:nowrap;overflow:hidden">${c}</div>`).join('')).join('')}
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;display:flex;gap:4px;padding:8px 14px;background:#F2F4F7;border-top:1px solid var(--linea)">
+      ${hojas.map((h,i)=>`<span data-in="${1.6+i*.25}" data-fx="up" style="padding:8px 13px;font-size:15px;font-weight:600;border-radius:6px;${i==0?'background:#fff;color:var(--rojo);box-shadow:0 1px 3px rgba(0,0,0,.15)':'color:#3A4A66'}">${h}</span>`).join('')}
+    </div>
+    <div data-in="5.6" data-out="14.6" data-fx="up" style="position:absolute;left:668px;top:96px;width:460px;background:#fff;border-radius:10px;box-shadow:0 18px 50px rgba(0,0,0,.25);padding:8px 0;font-size:18px">
+      ${menu.map((m,i)=>m==='—'?'<div style="height:1px;background:#E5E8EE;margin:6px 0"></div>':`<div data-in="${5.9+i*.18}" data-fx="fade" style="padding:12px 22px;${i===0?'background:#E7EBF3;font-weight:600':''}">${m}</div>`).join('')}
+    </div>
+  </div>`);
+
+// 19. Buenas prácticas
+const reg = ['Registre cada activo <b>el día que llega</b>, con su factura y foto.','Pegue la <b>etiqueta QR</b> en un lugar visible y protegido.','Si un bien cambia de lugar, <b>verifíquelo</b> en la aplicación.','Toda entrada o salida de material va con su <b>documento de respaldo</b>.','Si un equipo falla, cambie su estado a <b>En mantenimiento</b>.','Su PIN es personal: <b>no lo comparta</b> y use Salir al terminar.'];
+esc(17, 'Buenas prácticas', 'claro', `
+  <div style="position:absolute;left:96px;top:100px"><div class="cap" data-in="0.2" data-fx="up">14 · COMPROMISO DEL PERSONAL</div>
+  <div class="tit" data-in="0.4" data-fx="up">Seis reglas de oro</div></div>
+  <div style="position:absolute;left:96px;right:96px;top:290px;display:grid;grid-template-columns:1fr 1fr;gap:22px 34px">
+    ${reg.map((r,i)=>`<div class="card" data-in="${1.2+i*1.6}" data-fx="up" style="display:flex;gap:24px;align-items:center;padding:24px 28px">
+      <div class="mono" style="flex:none;width:68px;height:68px;border-radius:50%;background:${i%2?'var(--rojo)':'var(--azul)'};color:#fff;font-size:30px;font-weight:600;display:flex;align-items:center;justify-content:center">${i+1}</div>
+      <div style="font-size:25px;line-height:1.35">${r}</div></div>`).join('')}
+  </div>`);
+
+// 20. Cierre
+esc(10, '', 'oscuro', `
+  ${[260,420,600,800,1020].map((r,i)=>`<div class="anillo" data-in="${0.1+i*.15}" data-fx="ring" style="width:${r*2}px;height:${r*2}px;left:${1560-r}px;top:${190-r}px"></div>`).join('')}
+  <div style="position:absolute;left:0;right:0;top:220px;text-align:center">
+    <div data-in="0.3" data-fx="zoom" style="display:inline-block;background:#fff;border-radius:22px;padding:30px 46px;box-shadow:0 30px 90px rgba(0,0,0,.4)"><img src="${LOGO}" style="width:500px;display:block"></div>
+    <div data-in="1.2" data-fx="up" style="margin-top:60px;font-size:54px;font-weight:900;letter-spacing:-1px">Cada activo, en su lugar.</div>
+    <div data-in="1.8" data-fx="up" style="margin-top:14px;font-size:28px;color:#AEB8CC">Sistema de Control de Activos Fijos e Inventarios</div>
+    <div data-in="2.6" data-fx="fade" style="margin-top:44px;font-size:22px;color:#fff;background:rgba(255,255,255,.08);display:inline-block;padding:14px 30px;border-radius:40px;border:1px solid rgba(255,255,255,.18)">¿Dudas? Consulte con la administración</div>
+  </div>`);
+
+/* ---------- motor de render ---------- */
+const OV = 0.6;
+let t0 = 0; E.forEach(e => { e.start = t0; t0 += e.d - OV; });
+const TOTAL = t0 + OV;
+const stage = document.getElementById('stage');
+E.forEach((e, i) => {
+  const d = document.createElement('div'); d.className = 'esc ' + e.cls; d.innerHTML = e.html; d.style.zIndex = i + 1;
+  stage.appendChild(d); e.el = d;
+  e.anims = [...d.querySelectorAll('[data-in],[data-out]')];
+  e.cams = [...d.querySelectorAll('[data-cam]')].map(c => ({ el: c, ...JSON.parse(c.dataset.cam) }));
+  e.bars = [...d.querySelectorAll('[data-bar]')];
+  e.scan = d.querySelector('[data-scan]');
+});
+new QRCode(document.getElementById('qrDemo'), { text: 'https://boldatasat.github.io/activos/?c=RTC-0001', width: 250, height: 250, correctLevel: QRCode.CorrectLevel.M });
+
+function camara(c, lt){
+  const k = c.k; let a = k[0], b = k[k.length-1], p = 0;
+  for (let i = 0; i < k.length - 1; i++) if (lt >= k[i][0] && lt <= k[i+1][0]) { a = k[i]; b = k[i+1]; p = ease((lt - a[0]) / Math.max(1e-6, b[0] - a[0])); break; }
+  if (lt > k[k.length-1][0]) { a = b; p = 0; }
+  const cx = lerp(a[1], b[1], p), cy = lerp(a[2], b[2], p), z = lerp(a[3], b[3], p);
+  const s = c.fw / c.iw * z;
+  let tx = c.fw/2 - cx*s, ty = c.fh/2 - cy*s;
+  tx = Math.min(0, Math.max(c.fw - c.iw*s, tx));
+  ty = c.ih*s <= c.fh ? 0 : Math.min(0, Math.max(c.fh - c.ih*s, ty));
+  c.el.style.transform = `translate(${tx}px,${ty}px) scale(${s})`;
+}
+
+function animar(el, lt){
+  const tin = el.dataset.in != null ? +el.dataset.in : -99;
+  const tout = el.dataset.out != null ? +el.dataset.out : 1e9;
+  const fx = el.dataset.fx || 'fade';
+  let p = easeOut((lt - tin) / (fx === 'draw' ? 0.9 : 0.7));
+  const q = easeOut((lt - tout) / 0.5);
+  let o = p * (1 - q), tr = '';
+  if (fx === 'up') tr = `translateY(${(1-p)*40}px)`;
+  else if (fx === 'left') tr = `translateX(${(1-p)*-50}px)`;
+  else if (fx === 'right') tr = `translateX(${(1-p)*80}px)`;
+  else if (fx === 'zoom') tr = `scale(${0.85 + 0.15*p})`;
+  else if (fx === 'ring') { tr = `scale(${0.6 + 0.4*p + Math.sin(lt*0.8)*0.01})`; }
+  else if (fx === 'pulse') { o = p*(1-q); el.style.borderColor = `rgba(225,27,34,${0.75+0.25*Math.sin(lt*6)})`; }
+  else if (fx === 'pulsebg') { el.style.background = p > 0 ? `rgba(225,27,34,${0.12+0.1*Math.sin(lt*5)})` : 'transparent'; o = 1; }
+  else if (fx === 'draw') { el.querySelector('path').style.strokeDasharray = '1'; el.querySelector('path').style.strokeDashoffset = String(1 - p); el.querySelectorAll('path').forEach(pa => { pa.style.strokeDasharray='1'; pa.style.strokeDashoffset = String(1-p); }); o = p > 0 ? 1 : 0; }
+  el.style.opacity = o; if (tr) el.style.transform = tr;
+}
+
+function render(t){
+  let sec = '';
+  E.forEach(e => {
+    const lt = t - e.start;
+    if (lt < -0.01 || lt > e.d + 0.01) { e.el.style.opacity = 0; e.el.style.visibility = 'hidden'; return; }
+    e.el.style.visibility = 'visible';
+    const fin = e === E[E.length-1] ? Math.min(1, (e.d - lt) / 1.5) : 1;
+    e.el.style.opacity = Math.min(1, lt / OV) * fin;
+    e.anims.forEach(a => animar(a, lt));
+    e.cams.forEach(c => camara(c, lt));
+    e.bars.forEach(b => { b.style.width = (+b.dataset.bar * 100 * easeOut((lt - +b.dataset.in) / 1)) + '%'; });
+    if (e.scan) { const s = (lt - 1.8); e.scan.style.opacity = s > 0 && s < 1.6 ? 1 : 0; e.scan.style.top = (110 + 230 * ((s % 0.8) / 0.8)) + 'px'; }
+    if (lt > OV/2 || !sec) sec = e.sec;
+  });
+  const pie = document.getElementById('pie');
+  const ultimo = E[E.length-1], primero = E[0];
+  const oculto = t < primero.d - OV || t > ultimo.start;
+  pie.style.opacity = oculto ? 0 : 1;
+  document.getElementById('sec').textContent = sec;
+  document.getElementById('prog').style.width = (t / TOTAL * 100) + '%';
+}
+window.TOTAL = TOTAL; window.render = render;
+render(0);
+</script></body></html>
