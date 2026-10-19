@@ -71,7 +71,6 @@ body {
   padding: calc(var(--u) * 6) calc(var(--u) * 4) calc(var(--u) * 3.2);
   display: flex; flex-direction: column; gap: calc(var(--u) * 2.2);
   opacity: 0; visibility: hidden;
-  transition: opacity .45s ease, visibility 0s linear .45s;
 }
 .scene.on { opacity: 1; visibility: visible; transition: opacity .45s ease; }
 .scene h2 {
@@ -345,27 +344,47 @@ body {
 .req { font-family: var(--f-mono); font-size: calc(var(--u) * 1.1); color: var(--b3); }
 .course .req { position: absolute; top: calc(100% + var(--u) * .35); left: calc(var(--u) * .2); white-space: nowrap; }
 
-/* ---------- 6. Línea de tiempo ---------- */
-.tl { position: relative; flex: none; margin-top: auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: calc(var(--u) * 2.2); align-content: start; }
-.tl .chip { font-size: calc(var(--u) * 1.45); }
-.tl .cupo { width: calc(var(--u) * 5.4); height: calc(var(--u) * 3); }
-.tl .req { font-size: calc(var(--u) * 1.2); line-height: 1.5; }
-.tl-line { position: absolute; left: 0; right: 0; top: calc(var(--u) * 2); height: calc(var(--u) * .3); background: linear-gradient(90deg, var(--b2), var(--b3)); transform-origin: left center; --anim: grow-x; --t: 1.4s; }
-.tl-col { position: relative; display: flex; flex-direction: column; gap: calc(var(--u) * 1.3); min-width: 0; }
-.tl-node {
-  align-self: flex-start;
-  font-family: var(--f-display); font-weight: 800; font-size: calc(var(--u) * 2.2);
-  background: var(--navy); padding: calc(var(--u) * .35) calc(var(--u) * 1.3);
-  border-radius: 99px; box-shadow: inset 0 0 0 2px var(--b2);
+/* ---------- 6-9. Un verano por escena ---------- */
+.yr-head { display: flex; justify-content: space-between; align-items: flex-end; gap: calc(var(--u) * 1.4) calc(var(--u) * 3); flex-wrap: wrap; }
+.strip { display: flex; gap: calc(var(--u) * .6); flex-wrap: wrap; }
+.strip span {
+  font-family: var(--f-mono); font-weight: 700; font-size: calc(var(--u) * 1.2);
+  padding: calc(var(--u) * .45) calc(var(--u) * 1);
+  border-radius: 99px; color: var(--b3);
+  box-shadow: inset 0 0 0 1.5px var(--line);
   white-space: nowrap;
 }
-.tl-node span { color: var(--b3); font-weight: 600; }
-.cupos { display: flex; gap: calc(var(--u) * .7); }
-.scene.on .cupos .cupo { animation: pulse 1.6s ease-in-out var(--p, 3s) 2; }
-.chips { display: flex; flex-wrap: wrap; gap: calc(var(--u) * .6); }
-.foot { margin-bottom: auto; font-size: calc(var(--u) * 1.5); color: var(--b3); display: flex; gap: calc(var(--u) * 2); flex-wrap: wrap; align-items: center; }
-.foot span { display: inline-flex; align-items: center; gap: calc(var(--u) * .7); }
-.foot .cupo { width: calc(var(--u) * 2.6); height: calc(var(--u) * 1.6); }
+.strip span.done { background: rgba(59, 130, 246, .22); box-shadow: inset 0 0 0 1.5px var(--b2); }
+.strip span.cur { background: var(--y1); color: var(--navy); box-shadow: none; }
+.yr { display: grid; grid-template-columns: 1.75fr 1fr; gap: calc(var(--u) * 3); align-items: center; }
+.rows { display: flex; flex-direction: column; gap: calc(var(--u) * .8); min-width: 0; }
+.row {
+  display: grid; grid-template-columns: calc(var(--u) * 8.6) 1fr auto; align-items: center;
+  gap: calc(var(--u) * 1.4);
+  padding: calc(var(--u) * .9) calc(var(--u) * 1.3);
+  border-radius: calc(var(--u) * 1);
+  background: var(--panel);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.row .chip { font-size: calc(var(--u) * 1.35); }
+.row .nm { font-size: calc(var(--u) * 1.5); font-weight: 600; line-height: 1.2; min-width: 0; }
+.row .tag { display: block; margin-top: calc(var(--u) * .3); font-family: var(--f-mono); font-weight: 500; font-size: calc(var(--u) * 1.1); color: var(--cream); opacity: .8; }
+.row .rq { font-family: var(--f-mono); font-size: calc(var(--u) * 1.15); color: var(--b3); white-space: nowrap; }
+.row.cond { background: transparent; box-shadow: none; outline: 1.5px dashed var(--b2); outline-offset: -1.5px; }
+.scene.on .row.pick { animation: rise .7s cubic-bezier(.2, .8, .2, 1) var(--d) both, sel .4s var(--s) both; }
+@keyframes sel { to { background: rgba(245, 183, 0, .14); box-shadow: inset 0 0 0 2px var(--y2); } }
+.pickbox {
+  padding: calc(var(--u) * 2.2);
+  border-radius: calc(var(--u) * 1.4);
+  background: var(--panel);
+  box-shadow: inset 0 0 0 1px var(--line);
+  display: flex; flex-direction: column; gap: calc(var(--u) * 1.6); align-items: flex-start;
+}
+.pickbox .duo { display: flex; gap: calc(var(--u) * 1.2); padding-bottom: calc(var(--u) * 2); }
+.pickbox .slot { width: calc(var(--u) * 11); height: calc(var(--u) * 6.4); }
+.pickbox .big2 { font-family: var(--f-display); font-weight: 800; font-size: calc(var(--u) * 2.4); line-height: 1.05; }
+.pickbox .big2 em { font-style: normal; color: var(--y2); }
+.foot { font-size: calc(var(--u) * 1.5); color: var(--b3); }
 
 /* ---------- 7. Resumen ---------- */
 .sum { display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(var(--u) * 2.2); align-content: center; }
@@ -450,12 +469,13 @@ body {
   .arw { margin-inline: calc(var(--u) * .2); }
   .colh { flex-direction: column; align-items: flex-start; gap: calc(var(--u) * .5); }
 
-  .tl .chip { font-size: calc(var(--u) * 1.25); }
-  .tl .cupo { width: calc(var(--u) * 4.4); height: calc(var(--u) * 2.6); }
-  .tl { margin-top: 0; grid-template-columns: 1fr; gap: calc(var(--u) * 2.2); padding-left: calc(var(--u) * 2.4); }
-  .tl-line { left: calc(var(--u) * .4); right: auto; top: 0; bottom: 0; width: calc(var(--u) * .3); height: auto; transform-origin: center top; --anim: grow-y; background: linear-gradient(180deg, var(--b2), var(--b3)); }
-  .tl-col { display: grid; grid-template-columns: auto 1fr; gap: calc(var(--u) * .8) calc(var(--u) * 1.4); align-items: center; }
-  .tl-col .chips, .tl-col .req { grid-column: 1 / -1; }
+  .yr { grid-template-columns: 1fr; gap: calc(var(--u) * 2); align-content: start; }
+  .row { grid-template-columns: calc(var(--u) * 7.6) 1fr; row-gap: calc(var(--u) * .3); padding: calc(var(--u) * .8) calc(var(--u) * 1); }
+  .row .rq { grid-column: 2; }
+  .row .nm { font-size: calc(var(--u) * 1.35); }
+  .pickbox { padding: calc(var(--u) * 1.6); flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .pickbox .slot { width: calc(var(--u) * 10); height: calc(var(--u) * 5.6); }
+  .pickbox .fill { font-size: calc(var(--u) * 1.4); }
 
   .sum { grid-template-columns: 1fr; gap: calc(var(--u) * 1.6); align-content: start; }
   .card { padding: calc(var(--u) * 2); display: grid; grid-template-columns: auto 1fr; column-gap: calc(var(--u) * 2); align-items: center; }
@@ -468,6 +488,12 @@ body {
   .btn { width: 36px; height: 36px; }
   .btn.primary { width: 40px; height: 40px; }
 }
+
+/* ---------- Modo video ---------- */
+body.video { margin: 0; padding: 0; gap: 0; }
+.video .player { width: 100vw; gap: 0; }
+.video .stage { border-radius: 0; box-shadow: none; }
+.video .bar-ctl { display: none; }
 
 /* ---------- Movimiento reducido ---------- */
 @media (prefers-reduced-motion: reduce) {
@@ -660,42 +686,8 @@ body {
       </div>
     </section>
 
-    <!-- 6 -->
-    <section class="scene" data-dur="14000" data-name="Qué adelantar">
-      <h2 class="a">Qué <span class="bl">adelantar</span> en cada verano</h2>
-      <div class="body tl">
-        <div class="tl-line a" style="--d:.4s"></div>
-        <div class="tl-col a" style="--d:.8s">
-          <span class="tl-node">1.º <span>→</span> 2.º</span>
-          <div class="cupos" style="--p:3.4s"><i class="cupo"></i><i class="cupo"></i></div>
-          <div class="chips" data-chips="ADM-201 DER-201 ECO-201 MAT-201 CPA-204" data-d="1.4"></div>
-        </div>
-        <div class="tl-col a" style="--d:3.4s">
-          <span class="tl-node">2.º <span>→</span> 3.º</span>
-          <div class="cupos" style="--p:6s"><i class="cupo"></i><i class="cupo"></i></div>
-          <div class="chips" data-chips="ADM-301 ECO-301 MAT-301 MAT-401*" data-d="4"></div>
-          <span class="req a" style="--d:5.6s">* si aprobó MAT-301</span>
-        </div>
-        <div class="tl-col a" style="--d:6.6s">
-          <span class="tl-node">3.º <span>→</span> 4.º</span>
-          <div class="cupos" style="--p:8.6s"><i class="cupo"></i><i class="cupo"></i></div>
-          <div class="chips" data-chips="CPA-406 MAT-401" data-d="7.2"></div>
-          <span class="req a" style="--d:8s">CPA-406 ← CPA-301 a 304<br>MAT-401 ← MAT-102, MAT-301</span>
-        </div>
-        <div class="tl-col a" style="--d:9.2s">
-          <span class="tl-node">4.º <span>→</span> 5.º</span>
-          <div class="cupos" style="--p:11.2s"><i class="cupo"></i><i class="cupo"></i></div>
-          <div class="chips" data-chips="CPA-506 CPA-507 CPA-508 CPA-509 CPA-510" data-d="9.8"></div>
-          <span class="req a" style="--d:10.8s">← CPA-401 a 408</span>
-        </div>
-      </div>
-      <div class="foot a" style="--d:12s">
-        <span><i class="cupo"></i>Cupo</span>
-        <span>Con el año anterior aprobado</span>
-      </div>
-    </section>
-
-    <!-- 7 -->
+    <!-- 6-9: veranos, generados en el script -->
+    <!-- 10 -->
     <section class="scene" data-dur="9000" data-name="Resumen">
       <h2 class="a">Resumen</h2>
       <div class="body sum">
@@ -765,16 +757,82 @@ body {
     host.append(e);
   });
 
+  const stage = $('#stage');
   tiles($('#s1-before'), MALLA, 'n', .4, .03);
   tiles($('#s1-blue'), [...AREAS, ...CPA80], 'b', 3.3, .045);
   tiles($('#s1-yel'), CPA160, 'y', 4.4, .045);
   chips($('#s2-areas'), AREAS, 'b', 1.0, .06);
   chips($('#s2-cpa80'), CPA80, 'b', 2.1, .07);
   chips($('#s2-cpa160'), CPA160, 'y', 3.4, .05);
-  document.querySelectorAll('[data-chips]').forEach(h => chips(h, h.dataset.chips.split(' '), 'b', +h.dataset.d, .12));
+
+  // ---------- Un verano por escena ----------
+  const VERANOS = [
+    { de: '1.º', items: [
+      ['ADM-201', 'Administración de Sistemas Gerenciales', 'ADM-101'],
+      ['DER-201', 'Derecho Tributario y Legislación Aduanera', 'DER-101 y DER-102'],
+      ['ECO-201', 'Macroeconomía', 'ECO-101'],
+      ['MAT-201', 'Álgebra Lineal y Modelación para Negocios', 'MAT-101'],
+      ['CPA-204', 'Métodos y Técnicas de Investigación', 'CPA-101']
+    ], pick: ['MAT-201', 'ECO-201'] },
+    { de: '2.º', items: [
+      ['ADM-301', 'Desarrollo Organizacional y Comportamiento Organizacional', 'ADM-201'],
+      ['ECO-301', 'Preparación y Evaluación de Proyectos', 'ECO-201'],
+      ['MAT-301', 'Estadística', 'MAT-201'],
+      ['MAT-401', 'Matemáticas Actuariales y Técnicas Financieras', 'MAT-102 y MAT-301', 'Si aprobó MAT-301 en 2.º año']
+    ], pick: ['MAT-301', 'ECO-301'] },
+    { de: '3.º', items: [
+      ['CPA-406', 'Ética e Independencia Profesional', 'CPA-301 a CPA-304'],
+      ['MAT-401', 'Matemáticas Actuariales y Técnicas Financieras', 'MAT-102 y MAT-301']
+    ], pick: ['CPA-406', 'MAT-401'] },
+    { de: '4.º', items: [
+      ['CPA-506', 'Reportes y Aseguramiento de Sostenibilidad y Auditoría Ambiental', 'CPA-401 a CPA-408'],
+      ['CPA-507', 'Auditoría de Entidades Sin Fines de Lucro', 'CPA-401 a CPA-408'],
+      ['CPA-508', 'Auditoría Forense y Prevención de Delitos Económicos', 'CPA-401 a CPA-408'],
+      ['CPA-509', 'Auditoría de Entidades Financieras y Servicios Relacionados', 'CPA-401 a CPA-408'],
+      ['CPA-510', 'Taller de Grado', 'CPA-401 a CPA-408']
+    ], pick: ['CPA-508', 'CPA-510'] }
+  ];
+  const SIG = { '1.º': '2.º', '2.º': '3.º', '3.º': '4.º', '4.º': '5.º' };
+  const resumen = document.querySelector('.scene[data-name="Resumen"]');
+  VERANOS.forEach((v, n) => {
+    const sec = document.createElement('section');
+    sec.className = 'scene';
+    sec.dataset.dur = '10500';
+    sec.dataset.name = `Verano tras ${v.de} año`;
+    const strip = VERANOS.map((w, k) =>
+      `<span class="${k < n ? 'done' : k === n ? 'cur' : ''}">${w.de} → ${SIG[w.de]}</span>`).join('');
+    const sel = {};
+    v.pick.forEach((c, k) => { sel[c] = 4.2 + k * 1.4; });
+    const rows = v.items.map(([c, nm, rq, cond], k) => {
+      const d = (0.9 + k * .32).toFixed(2);
+      const pick = c in sel;
+      return `<div class="row${cond ? ' cond' : ''}${pick ? ' pick' : ' a'}" style="--d:${d}s${pick ? `; --s:${sel[c]}s` : ''}">
+        <span class="chip ${cond ? 'dash' : 'b'}">${c}</span>
+        <span class="nm">${nm}${cond ? `<span class="tag">${cond}</span>` : ''}</span>
+        <span class="rq">← ${rq}</span>
+      </div>`;
+    }).join('');
+    const slots = v.pick.map((c, k) => `<div class="slot">
+        <span class="chip b fill keep" style="--d:${(sel[c] + .4).toFixed(1)}s">${c}</span>
+        <span class="label lbl">Cupo ${k + 1}</span>
+      </div>`).join('');
+    sec.innerHTML = `
+      <div class="yr-head">
+        <h2 class="a">Verano tras <em>${v.de} año</em></h2>
+        <div class="strip a" style="--d:.3s" aria-hidden="true">${strip}</div>
+      </div>
+      <div class="body yr">
+        <div class="rows">${rows}</div>
+        <div class="pickbox a" style="--d:1.6s">
+          <span class="big2">Elige <em>hasta 2</em></span>
+          <div class="duo">${slots}</div>
+        </div>
+      </div>
+      <p class="foot a" style="--d:7.2s; margin:0">Con ${v.de} año aprobado · ← prerrequisito</p>`;
+    stage.insertBefore(sec, resumen);
+  });
 
   // ---------- Reproductor ----------
-  const stage = $('#stage');
   const scenes = [...stage.querySelectorAll('.scene')];
   const durs = scenes.map(s => +s.dataset.dur);
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
@@ -870,9 +928,19 @@ body {
     else if (e.key === 'ArrowLeft') { go(i - 1); setPlaying(true); }
   });
 
-  window.__cursos = { go, setPlaying, seek: ms => { t = ms; render(); } };
+  // Modo video (#video): sin controles; cada cuadro se dibuja a un tiempo exacto para grabarlo
+  function frame(n, ms) {
+    if (n !== i) go(n);
+    playing = false;
+    t = ms;
+    stage.getAnimations({ subtree: true }).forEach(a => { a.pause(); a.currentTime = ms; });
+    render();
+  }
+  const video = location.hash === '#video';
+  if (video) document.body.classList.add('video');
+  window.__cursos = { go, setPlaying, frame, durs, seek: ms => { t = ms; render(); } };
   go(0);
-  setPlaying(true);
-  requestAnimationFrame(tick);
+  setPlaying(!video);
+  if (!video) requestAnimationFrame(tick);
 })();
 </script>
