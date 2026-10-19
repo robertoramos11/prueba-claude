@@ -1,0 +1,878 @@
+<title>Cursos de Temporada CPA</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Explicación animada de las reglas de cursos de verano de la Carrera de Contaduría Pública, UMSA.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: un escenario 16:9 con escenas superpuestas y barra de reproducción debajo; en celular vertical el escenario se alarga y las escenas se apilan */
+:root {
+  --navy: #0B1B3A;
+  --navy-2: #102A57;
+  --b1: #1E4FA3;
+  --b2: #3B82F6;
+  --b3: #93C5FD;
+  --y1: #F5B700;
+  --y2: #FFD84D;
+  --cream: #FFF6E0;
+  --line: rgba(147, 197, 253, .22);
+  --panel: rgba(30, 79, 163, .16);
+  --f-display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --f-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--navy);
+  color: var(--cream);
+  font-family: var(--f-body);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding-block: 14px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- Escenario ---------- */
+.player { width: min(100%, max(520px, calc((100svh - 110px) * 16 / 9))); min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.stage {
+  --u: 1cqw;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-width: 100%;
+  container-type: size;
+  overflow: hidden;
+  border-radius: 16px;
+  background:
+    radial-gradient(120% 90% at 85% 0%, rgba(59, 130, 246, .18), transparent 60%),
+    radial-gradient(80% 70% at 0% 100%, rgba(245, 183, 0, .07), transparent 60%),
+    var(--navy-2);
+  box-shadow: inset 0 0 0 1px var(--line), 0 20px 60px rgba(0, 0, 0, .35);
+}
+.chrome {
+  position: absolute; inset: 0 0 auto 0; z-index: 2;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: calc(var(--u) * 2.2) calc(var(--u) * 4) 0;
+  font-family: var(--f-mono); font-weight: 500;
+  font-size: calc(var(--u) * 1.15);
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--b3);
+}
+.chrome b { color: var(--y2); font-weight: 700; }
+.scene {
+  position: absolute; inset: 0;
+  padding: calc(var(--u) * 6) calc(var(--u) * 4) calc(var(--u) * 3.2);
+  display: flex; flex-direction: column; gap: calc(var(--u) * 2.2);
+  opacity: 0; visibility: hidden;
+  transition: opacity .45s ease, visibility 0s linear .45s;
+}
+.scene.on { opacity: 1; visibility: visible; transition: opacity .45s ease; }
+.scene h2 {
+  margin: 0;
+  font-family: var(--f-display); font-weight: 800;
+  font-size: calc(var(--u) * 3.9);
+  line-height: 1.02; letter-spacing: -.01em;
+  text-wrap: balance;
+}
+.scene h2 em { font-style: normal; color: var(--y2); }
+.scene h2 .bl { color: var(--b3); }
+.body { flex: 1; min-height: 0; }
+
+/* ---------- Animación base ---------- */
+.scene.on .a { animation: var(--anim, rise) var(--t, .7s) cubic-bezier(.2, .8, .2, 1) var(--d, 0s) both; }
+.stage.paused .scene, .stage.paused .scene * { animation-play-state: paused !important; }
+@keyframes rise { from { opacity: 0; transform: translateY(calc(var(--u) * 1.6)); } to { opacity: 1; transform: none; } }
+@keyframes pop { 0% { opacity: 0; transform: scale(.3); } 70% { opacity: 1; transform: scale(1.12); } 100% { opacity: 1; transform: none; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes grow-x { from { transform: scaleX(0); } to { transform: none; } }
+@keyframes grow-y { from { transform: scaleY(0); } to { transform: none; } }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 216, 77, 0); } 50% { box-shadow: 0 0 0 calc(var(--u) * .6) rgba(255, 216, 77, .25); } }
+
+/* ---------- Fichas ---------- */
+.chip {
+  display: inline-flex; align-items: center; justify-content: center;
+  position: relative;
+  font-family: var(--f-mono); font-weight: 700;
+  font-size: calc(var(--u) * 1.2);
+  padding: calc(var(--u) * .55) calc(var(--u) * .7);
+  border-radius: calc(var(--u) * .55);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.chip.b { background: var(--b1); color: #fff; box-shadow: inset 0 0 0 1px var(--b2); }
+.chip.y { background: var(--y1); color: var(--navy); }
+.chip.dash { background: transparent; color: var(--b3); box-shadow: inset 0 0 0 1.5px var(--b2); outline: 1.5px dashed var(--b2); outline-offset: -1.5px; box-shadow: none; }
+.chip.first::after {
+  content: ""; position: absolute; top: calc(var(--u) * -.35); right: calc(var(--u) * -.35);
+  width: calc(var(--u) * .85); height: calc(var(--u) * .85); border-radius: 50%;
+  background: var(--cream); box-shadow: 0 0 0 calc(var(--u) * .2) var(--navy-2);
+}
+.cupo {
+  display: inline-block;
+  width: calc(var(--u) * 4.4); height: calc(var(--u) * 2.6);
+  border-radius: calc(var(--u) * .55);
+  border: 2px dashed var(--y1);
+  background: rgba(245, 183, 0, .12);
+  box-sizing: border-box;
+}
+.label {
+  font-family: var(--f-mono); font-weight: 700;
+  font-size: calc(var(--u) * 1.15);
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--b3);
+}
+
+/* ---------- 1. ¿Qué cambia? ---------- */
+.s1 { display: grid; grid-template-columns: 1fr auto 1.2fr; gap: calc(var(--u) * 2.4); align-items: stretch; }
+.panel {
+  display: flex; flex-direction: column; gap: calc(var(--u) * 1.6);
+  padding: calc(var(--u) * 2.2);
+  border-radius: calc(var(--u) * 1.4);
+  background: var(--panel);
+  box-shadow: inset 0 0 0 1px var(--line);
+  min-width: 0;
+}
+.tiles { display: grid; grid-template-columns: repeat(9, calc(var(--u) * 3)); gap: calc(var(--u) * .6); }
+.tile { width: calc(var(--u) * 3); height: calc(var(--u) * 3); border-radius: calc(var(--u) * .55); }
+.tile.n { background: rgba(147, 197, 253, .1); box-shadow: inset 0 0 0 1.5px rgba(147, 197, 253, .55); }
+.tile.b { background: var(--b2); }
+.tile.y { background: var(--y1); }
+.clusters { display: flex; gap: calc(var(--u) * 2.6); flex-wrap: wrap; }
+.cluster { display: flex; flex-direction: column; gap: calc(var(--u) * 1); }
+.cluster .tiles { grid-template-columns: repeat(5, calc(var(--u) * 3)); }
+.count { font-family: var(--f-display); font-weight: 800; font-size: calc(var(--u) * 3.4); line-height: 1; font-variant-numeric: tabular-nums; }
+.count.b { color: var(--b3); }
+.count.y { color: var(--y2); }
+.cap { font-size: calc(var(--u) * 1.75); font-weight: 600; margin-top: auto; }
+.vs { align-self: center; color: var(--b3); }
+.vs svg { width: calc(var(--u) * 4.5); height: calc(var(--u) * 4.5); display: block; }
+.vs path { stroke-dasharray: 1; }
+.scene.on .vs path { animation: draw .9s ease-out 2.6s both; }
+@keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.limit { display: flex; align-items: center; gap: calc(var(--u) * 1); margin-top: auto; flex-wrap: wrap; }
+.limit .cap { margin: 0 0 0 calc(var(--u) * .6); color: var(--y2); }
+
+/* ---------- 2. Clasificación ---------- */
+.s2 { display: grid; grid-template-columns: 1fr 1fr; gap: calc(var(--u) * 3); align-items: start; }
+.grp { display: flex; flex-direction: column; gap: calc(var(--u) * 1.3); min-width: 0; }
+.grp header { display: flex; align-items: center; gap: calc(var(--u) * 1.4); padding-bottom: calc(var(--u) * 1); border-bottom: 2px solid var(--b2); }
+.grp.yel header { border-color: var(--y1); }
+.grp .big { font-family: var(--f-display); font-weight: 800; font-size: calc(var(--u) * 5.4); line-height: .9; color: var(--b3); font-variant-numeric: tabular-nums; min-width: 2.1ch; }
+.grp.yel .big { color: var(--y2); }
+.grp header b { display: block; font-family: var(--f-display); font-size: calc(var(--u) * 2.3); line-height: 1.1; }
+.grp header small { font-size: calc(var(--u) * 1.45); color: var(--b3); }
+.sub { display: flex; flex-direction: column; gap: calc(var(--u) * .7); }
+.grid5 { display: grid; grid-template-columns: repeat(5, calc(var(--u) * 7.4)); gap: calc(var(--u) * .6); }
+.note { margin: 0; display: flex; align-items: center; gap: calc(var(--u) * .8); font-size: calc(var(--u) * 1.4); color: var(--b3); }
+.note i { width: calc(var(--u) * .9); height: calc(var(--u) * .9); border-radius: 50%; background: var(--cream); flex: none; }
+
+/* ---------- 3. Cupos ---------- */
+.s3 { display: grid; grid-template-columns: 1.35fr 1fr; gap: calc(var(--u) * 3); align-items: center; }
+.frame {
+  padding: calc(var(--u) * 2.2);
+  border-radius: calc(var(--u) * 1.4);
+  background: var(--panel);
+  box-shadow: inset 0 0 0 1px var(--line);
+  display: flex; flex-direction: column; gap: calc(var(--u) * 1.8);
+}
+.slots { display: flex; gap: calc(var(--u) * 1.4); align-items: center; padding-right: calc(var(--u) * 5); }
+.slot {
+  position: relative;
+  width: calc(var(--u) * 12); height: calc(var(--u) * 7);
+  border-radius: calc(var(--u) * 1);
+  border: 3px dashed var(--y1);
+  background: rgba(245, 183, 0, .1);
+  box-sizing: border-box; flex: none;
+}
+.slot > span.lbl { position: absolute; left: 0; right: 0; top: calc(100% + var(--u) * .5); text-align: center; }
+.fill {
+  position: absolute; inset: calc(var(--u) * .8);
+  font-size: calc(var(--u) * 1.7);
+  border-radius: calc(var(--u) * .7);
+}
+.scene.on .fill { animation: chip-in .55s cubic-bezier(.2, .9, .3, 1.2) var(--d) both, chip-out .4s ease-in var(--e) forwards; }
+.scene.on .fill.keep { animation: chip-in .55s cubic-bezier(.2, .9, .3, 1.2) var(--d) both; }
+@keyframes chip-in { from { opacity: 0; transform: translateY(-130%) scale(.9); } to { opacity: 1; transform: none; } }
+@keyframes chip-out { to { opacity: 0; transform: translateY(40%) scale(.85); } }
+.bouncer { position: relative; width: calc(var(--u) * 10); height: calc(var(--u) * 5.4); flex: none; }
+.bouncer .chip { position: absolute; inset: 0; font-size: calc(var(--u) * 1.6); border-radius: calc(var(--u) * .7); }
+.scene.on .bouncer .chip { animation: bounce 1.6s cubic-bezier(.3, .7, .3, 1) 10.2s both; }
+@keyframes bounce {
+  0% { opacity: 0; transform: translateX(120%); }
+  28% { opacity: 1; transform: translateX(-12%); }
+  42% { transform: translateX(46%) rotate(7deg); }
+  58% { transform: translateX(22%) rotate(-5deg); }
+  74% { transform: translateX(34%) rotate(3deg); }
+  100% { opacity: .55; transform: translateX(30%) rotate(0deg); }
+}
+.nope {
+  position: absolute; z-index: 1;
+  top: calc(var(--u) * -1.3); right: calc(var(--u) * -1.8);
+  width: calc(var(--u) * 3); height: calc(var(--u) * 3);
+  border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--cream); color: var(--navy);
+}
+.nope svg { width: 60%; height: 60%; }
+.bouncer .lbl { position: absolute; top: calc(100% + var(--u) * .9); left: 30%; white-space: nowrap; color: var(--cream); }
+.combos { display: flex; flex-direction: column; gap: calc(var(--u) * 1.2); }
+.combo {
+  display: flex; align-items: center; gap: calc(var(--u) * .9);
+  padding: calc(var(--u) * 1.1) calc(var(--u) * 1.4);
+  border-radius: calc(var(--u) * 1);
+  box-shadow: inset 0 0 0 1px var(--line);
+  background: rgba(11, 27, 58, .5);
+}
+.scene.on .combo { animation: rise .6s cubic-bezier(.2, .8, .2, 1) var(--d) both, hl .4s var(--d) both, unhl .4s var(--e) forwards; }
+.scene.on .combo.last { animation: rise .6s cubic-bezier(.2, .8, .2, 1) var(--d) both, hl .4s var(--d) both; }
+@keyframes hl { from { box-shadow: inset 0 0 0 1px var(--line); } to { box-shadow: inset 0 0 0 2px var(--y2); } }
+@keyframes unhl { to { box-shadow: inset 0 0 0 1px var(--line); } }
+.mini { width: calc(var(--u) * 4.6); height: calc(var(--u) * 2.4); border-radius: calc(var(--u) * .45); }
+.mini.b { background: var(--b2); }
+.mini.y { background: var(--y1); }
+.plus { color: var(--b3); font-weight: 700; font-size: calc(var(--u) * 1.6); }
+.ok { margin-left: auto; width: calc(var(--u) * 2.6); height: calc(var(--u) * 2.6); color: var(--y2); }
+.legend { display: flex; flex-wrap: wrap; gap: calc(var(--u) * .6) calc(var(--u) * 2); font-size: calc(var(--u) * 1.5); }
+.legend span { display: inline-flex; align-items: center; gap: calc(var(--u) * .7); }
+.legend i { width: calc(var(--u) * 1.6); height: calc(var(--u) * 1.6); border-radius: calc(var(--u) * .35); }
+
+/* ---------- 4. Condición de recuperación ---------- */
+.flow { display: flex; align-items: center; gap: calc(var(--u) * 1.4); }
+.node {
+  padding: calc(var(--u) * 2) calc(var(--u) * 2.2);
+  border-radius: calc(var(--u) * 1.4);
+  background: var(--panel);
+  box-shadow: inset 0 0 0 1px var(--line);
+  display: flex; flex-direction: column; gap: calc(var(--u) * 1); align-items: flex-start;
+}
+.node .chip { font-size: calc(var(--u) * 2); padding: calc(var(--u) * .9) calc(var(--u) * 1.2); }
+.hrs { font-family: var(--f-mono); font-size: calc(var(--u) * 1.3); color: var(--y2); }
+.stamp {
+  font-family: var(--f-display); font-weight: 800; font-size: calc(var(--u) * 1.9);
+  color: var(--cream);
+  border: 2px solid var(--cream);
+  border-radius: calc(var(--u) * .5);
+  padding: calc(var(--u) * .2) calc(var(--u) * .8);
+  transform: rotate(-6deg);
+}
+.scene.on .stamp { animation: stamp .5s cubic-bezier(.3, 1.6, .5, 1) 1.3s both; }
+@keyframes stamp { from { opacity: 0; transform: rotate(-6deg) scale(2.2); } to { opacity: 1; transform: rotate(-6deg); } }
+.conn { flex: 0 0 calc(var(--u) * 5); height: calc(var(--u) * .35); background: var(--b3); position: relative; transform-origin: left center; --anim: grow-x; --t: .6s; }
+.conn::after {
+  content: ""; position: absolute; right: calc(var(--u) * -.4); top: 50%;
+  border-left: calc(var(--u) * 1.1) solid var(--b3);
+  border-top: calc(var(--u) * .75) solid transparent;
+  border-bottom: calc(var(--u) * .75) solid transparent;
+  transform: translateY(-50%);
+}
+.gauge { width: calc(var(--u) * 24); }
+.gauge .num { font-family: var(--f-display); font-weight: 800; font-size: calc(var(--u) * 5.6); line-height: 1; font-variant-numeric: tabular-nums; color: var(--b3); }
+.gauge.pass .num { color: var(--y2); }
+.gauge .num small { font-size: .38em; color: var(--b3); font-weight: 600; }
+.bar { position: relative; width: 100%; height: calc(var(--u) * 1.3); border-radius: 99px; background: rgba(147, 197, 253, .15); margin-top: calc(var(--u) * .4); }
+.bar .fillbar { position: absolute; inset: 0 auto 0 0; width: calc(var(--v, 0) * 1%); border-radius: inherit; background: var(--b2); }
+.gauge.pass .fillbar { background: var(--y1); }
+.bar .th { position: absolute; left: 30%; top: calc(var(--u) * -.7); bottom: calc(var(--u) * -.7); width: 3px; background: var(--cream); }
+.bar .th span { position: absolute; top: calc(100% + var(--u) * .3); left: 50%; transform: translateX(-50%); font-family: var(--f-mono); font-size: calc(var(--u) * 1.2); color: var(--cream); white-space: nowrap; }
+.outs { flex: 1; display: flex; flex-direction: column; gap: calc(var(--u) * 1.6); min-width: 0; }
+.out {
+  display: flex; align-items: center; gap: calc(var(--u) * 1.3);
+  padding: calc(var(--u) * 1.5) calc(var(--u) * 1.8);
+  border-radius: calc(var(--u) * 1.2);
+  box-shadow: inset 0 0 0 1.5px var(--line);
+  font-size: calc(var(--u) * 1.9); font-weight: 600;
+}
+.out .k { font-family: var(--f-display); font-weight: 800; font-size: calc(var(--u) * 2.7); font-variant-numeric: tabular-nums; flex: none; }
+.out.yes .k { color: var(--y2); }
+.out.no .k { color: var(--b3); }
+.scene.on .out.yes { animation: rise .6s cubic-bezier(.2, .8, .2, 1) 3.4s both, hl-yes .5s 4.3s both, un-yes .5s 7.4s forwards; }
+.scene.on .out.no { animation: rise .6s cubic-bezier(.2, .8, .2, 1) 3.6s both, hl-no .5s 8.6s both; }
+@keyframes hl-yes { to { background: var(--y1); color: var(--navy); box-shadow: inset 0 0 0 1.5px var(--y1); } }
+@keyframes un-yes { from { background: var(--y1); color: var(--navy); } to { background: transparent; color: var(--cream); box-shadow: inset 0 0 0 1.5px rgba(245, 183, 0, .6); } }
+@keyframes hl-no { to { background: var(--b1); box-shadow: inset 0 0 0 2px var(--b3); } }
+.scene.on .out.yes .k { animation: k-ink .5s 4.3s both, k-back .5s 7.4s forwards; }
+@keyframes k-ink { to { color: var(--navy); } }
+@keyframes k-back { from { color: var(--navy); } to { color: var(--y2); } }
+
+/* ---------- 5. Gestión ordinaria ---------- */
+.s5 {
+  display: grid;
+  grid-template-columns: 1fr calc(var(--u) * 4) 1.2fr calc(var(--u) * 4) 1fr;
+  row-gap: calc(var(--u) * 1.7);
+  align-items: center; align-content: center;
+}
+.colh { display: flex; align-items: center; gap: calc(var(--u) * 1); padding-bottom: calc(var(--u) * .8); border-bottom: 1px solid var(--line); align-self: end; }
+.dots { display: flex; gap: calc(var(--u) * .35); }
+.dots i { width: calc(var(--u) * .9); height: calc(var(--u) * .9); border-radius: calc(var(--u) * .2); background: rgba(147, 197, 253, .45); }
+.course {
+  display: flex; align-items: center; gap: calc(var(--u) * 1);
+  padding: calc(var(--u) * 1) calc(var(--u) * 1.2);
+  border-radius: calc(var(--u) * 1);
+  background: var(--b1);
+  box-shadow: inset 0 0 0 1px var(--b2);
+  position: relative; min-width: 0;
+}
+.course .tx { display: flex; flex-direction: column; min-width: 0; }
+.course .code { font-family: var(--f-mono); font-weight: 700; font-size: calc(var(--u) * 1.5); }
+.course .nm { font-size: calc(var(--u) * 1.2); color: var(--b3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.course .ic { width: calc(var(--u) * 2.3); height: calc(var(--u) * 2.3); flex: none; margin-left: auto; color: var(--cream); }
+.scene.on .course.locked { animation: rise .6s cubic-bezier(.2, .8, .2, 1) var(--d) both, enable .6s var(--l) both; }
+@keyframes enable { from { background: rgba(11, 27, 58, .6); box-shadow: inset 0 0 0 1.5px rgba(147, 197, 253, .35); color: rgba(255, 246, 224, .55); } }
+.lock .shackle { transform-box: view-box; transform-origin: 16px 11px; }
+.scene.on .lock .shackle { animation: unlock .5s cubic-bezier(.3, 1.4, .5, 1) var(--l) both; }
+@keyframes unlock { from { transform: none; } to { transform: translateY(-2.5px) rotate(28deg); } }
+.badge {
+  position: absolute; top: calc(var(--u) * -1); right: calc(var(--u) * -1);
+  width: calc(var(--u) * 2.4); height: calc(var(--u) * 2.4); border-radius: 50%;
+  background: var(--cream); color: var(--navy); display: grid; place-items: center;
+  --anim: pop; --t: .45s;
+}
+.badge svg { width: 65%; height: 65%; }
+.arw { height: calc(var(--u) * .3); background: var(--b3); position: relative; transform-origin: left center; margin-inline: calc(var(--u) * .5); --anim: grow-x; --t: .5s; }
+.arw::after {
+  content: ""; position: absolute; right: calc(var(--u) * -.3); top: 50%; transform: translateY(-50%);
+  border-left: calc(var(--u) * .9) solid var(--b3);
+  border-top: calc(var(--u) * .6) solid transparent;
+  border-bottom: calc(var(--u) * .6) solid transparent;
+}
+.req { font-family: var(--f-mono); font-size: calc(var(--u) * 1.1); color: var(--b3); }
+.course .req { position: absolute; top: calc(100% + var(--u) * .35); left: calc(var(--u) * .2); white-space: nowrap; }
+
+/* ---------- 6. Línea de tiempo ---------- */
+.tl { position: relative; flex: none; margin-top: auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: calc(var(--u) * 2.2); align-content: start; }
+.tl .chip { font-size: calc(var(--u) * 1.45); }
+.tl .cupo { width: calc(var(--u) * 5.4); height: calc(var(--u) * 3); }
+.tl .req { font-size: calc(var(--u) * 1.2); line-height: 1.5; }
+.tl-line { position: absolute; left: 0; right: 0; top: calc(var(--u) * 2); height: calc(var(--u) * .3); background: linear-gradient(90deg, var(--b2), var(--b3)); transform-origin: left center; --anim: grow-x; --t: 1.4s; }
+.tl-col { position: relative; display: flex; flex-direction: column; gap: calc(var(--u) * 1.3); min-width: 0; }
+.tl-node {
+  align-self: flex-start;
+  font-family: var(--f-display); font-weight: 800; font-size: calc(var(--u) * 2.2);
+  background: var(--navy); padding: calc(var(--u) * .35) calc(var(--u) * 1.3);
+  border-radius: 99px; box-shadow: inset 0 0 0 2px var(--b2);
+  white-space: nowrap;
+}
+.tl-node span { color: var(--b3); font-weight: 600; }
+.cupos { display: flex; gap: calc(var(--u) * .7); }
+.scene.on .cupos .cupo { animation: pulse 1.6s ease-in-out var(--p, 3s) 2; }
+.chips { display: flex; flex-wrap: wrap; gap: calc(var(--u) * .6); }
+.foot { margin-bottom: auto; font-size: calc(var(--u) * 1.5); color: var(--b3); display: flex; gap: calc(var(--u) * 2); flex-wrap: wrap; align-items: center; }
+.foot span { display: inline-flex; align-items: center; gap: calc(var(--u) * .7); }
+.foot .cupo { width: calc(var(--u) * 2.6); height: calc(var(--u) * 1.6); }
+
+/* ---------- 7. Resumen ---------- */
+.sum { display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(var(--u) * 2.2); align-content: center; }
+.card {
+  display: flex; flex-direction: column; gap: calc(var(--u) * 1);
+  padding: calc(var(--u) * 2.6);
+  border-radius: calc(var(--u) * 1.6);
+  min-width: 0;
+}
+.card .n { font-family: var(--f-display); font-weight: 800; font-size: calc(var(--u) * 9); line-height: .9; font-variant-numeric: tabular-nums; }
+.card .l { font-family: var(--f-display); font-weight: 600; font-size: calc(var(--u) * 2.3); line-height: 1.1; }
+.card .s { font-family: var(--f-mono); font-size: calc(var(--u) * 1.2); letter-spacing: .04em; margin-top: auto; padding-top: calc(var(--u) * 1); }
+.card.blue { background: var(--b1); box-shadow: inset 0 0 0 1px var(--b2); }
+.card.blue .n { color: var(--b3); }
+.card.blue .s { color: var(--b3); }
+.card.ring { background: rgba(245, 183, 0, .08); box-shadow: inset 0 0 0 2px var(--y1); }
+.card.ring .n { color: var(--y2); }
+.card.ring .s { color: var(--y2); }
+.card.solid { background: var(--y1); color: var(--navy); }
+.card.solid .n { color: var(--navy); }
+.src { font-family: var(--f-mono); font-size: calc(var(--u) * 1.15); color: var(--b3); letter-spacing: .06em; }
+
+/* ---------- Barra de control ---------- */
+.bar-ctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.btn {
+  width: 42px; height: 42px; flex: none;
+  display: grid; place-items: center;
+  border: 0; border-radius: 12px;
+  background: rgba(147, 197, 253, .12); color: var(--cream);
+  cursor: pointer;
+  transition: background .2s;
+}
+.btn:hover { background: rgba(147, 197, 253, .24); }
+.btn:focus-visible, .seg:focus-visible { outline: 2px solid var(--y2); outline-offset: 2px; }
+.btn.primary { width: 50px; height: 50px; border-radius: 50%; background: var(--y1); color: var(--navy); }
+.btn.primary:hover { background: var(--y2); }
+.btn svg { width: 20px; height: 20px; }
+.prog { flex: 1 1 260px; display: flex; gap: 4px; min-width: 0; }
+.seg { flex: 1; height: 26px; border: 0; padding: 0; background: none; cursor: pointer; display: flex; align-items: center; }
+.seg span { display: block; width: 100%; height: 6px; border-radius: 99px; background: rgba(147, 197, 253, .2); overflow: hidden; }
+.seg i { display: block; height: 100%; width: calc(var(--p, 0) * 100%); background: var(--b2); border-radius: inherit; }
+.seg.cur i { background: var(--y1); }
+.now { font-family: var(--f-mono); font-size: 13px; color: var(--b3); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 0 1 220px; }
+.now b { color: var(--cream); }
+
+/* ---------- Celular vertical ---------- */
+@media (max-width: 720px) and (orientation: portrait) {
+  body { justify-content: flex-start; }
+  .player { width: 100%; }
+  .stage { aspect-ratio: auto; height: max(600px, calc(100svh - 140px)); --u: min(2.25cqw, 1.18cqh); }
+  .chrome { padding: calc(var(--u) * 2.4) calc(var(--u) * 2.4) 0; font-size: calc(var(--u) * 1.2); }
+  .scene { padding: calc(var(--u) * 6.4) calc(var(--u) * 2.4) calc(var(--u) * 2.4); gap: calc(var(--u) * 2.4); }
+  .scene h2 { font-size: calc(var(--u) * 4.2); }
+
+  .s1 { grid-template-columns: 1fr; gap: calc(var(--u) * 1.4); align-content: start; }
+  .vs { display: none; }
+  .tiles { grid-template-columns: repeat(11, calc(var(--u) * 2.6)); }
+  .tile { width: calc(var(--u) * 2.6); height: calc(var(--u) * 2.6); }
+  .cluster .tiles { grid-template-columns: repeat(6, calc(var(--u) * 2.6)); }
+  .panel { padding: calc(var(--u) * 1.8); gap: calc(var(--u) * 1.2); }
+
+  .s2 { grid-template-columns: 1fr; gap: calc(var(--u) * 2.6); align-content: start; }
+  .grp .big { font-size: calc(var(--u) * 4.6); }
+
+  .s3 { grid-template-columns: 1fr; gap: calc(var(--u) * 3); align-content: start; }
+  .slots { padding-right: 0; }
+  .slot { width: calc(var(--u) * 11); height: calc(var(--u) * 6.4); }
+  .bouncer { width: calc(var(--u) * 9); height: calc(var(--u) * 5); }
+
+  .flow { flex-direction: column; align-items: stretch; gap: calc(var(--u) * 1.2); }
+  .node { align-items: center; }
+  .gauge { width: auto; }
+  .conn { flex: 0 0 calc(var(--u) * 3.6); width: calc(var(--u) * .35); height: auto; align-self: center; transform-origin: center top; --anim: grow-y; }
+  .conn::after { right: auto; top: auto; left: 50%; bottom: calc(var(--u) * -.4); transform: translateX(-50%); border-left: calc(var(--u) * .75) solid transparent; border-right: calc(var(--u) * .75) solid transparent; border-top: calc(var(--u) * 1.1) solid var(--b3); border-bottom: 0; }
+  .outs { flex: none; flex-direction: row; }
+  .out { flex: 1; flex-direction: column; align-items: flex-start; gap: calc(var(--u) * .4); font-size: calc(var(--u) * 1.8); }
+
+  .s5 { grid-template-columns: 1fr calc(var(--u) * 2.4) 1fr calc(var(--u) * 2.4) 1fr; row-gap: calc(var(--u) * 3); align-content: start; }
+  .course { flex-direction: column; align-items: flex-start; gap: calc(var(--u) * .5); padding: calc(var(--u) * .9); }
+  .course .ic { position: absolute; top: calc(var(--u) * .8); right: calc(var(--u) * .8); width: calc(var(--u) * 2); height: calc(var(--u) * 2); }
+  .course .code { font-size: calc(var(--u) * 1.35); }
+  .arw { margin-inline: calc(var(--u) * .2); }
+  .colh { flex-direction: column; align-items: flex-start; gap: calc(var(--u) * .5); }
+
+  .tl .chip { font-size: calc(var(--u) * 1.25); }
+  .tl .cupo { width: calc(var(--u) * 4.4); height: calc(var(--u) * 2.6); }
+  .tl { margin-top: 0; grid-template-columns: 1fr; gap: calc(var(--u) * 2.2); padding-left: calc(var(--u) * 2.4); }
+  .tl-line { left: calc(var(--u) * .4); right: auto; top: 0; bottom: 0; width: calc(var(--u) * .3); height: auto; transform-origin: center top; --anim: grow-y; background: linear-gradient(180deg, var(--b2), var(--b3)); }
+  .tl-col { display: grid; grid-template-columns: auto 1fr; gap: calc(var(--u) * .8) calc(var(--u) * 1.4); align-items: center; }
+  .tl-col .chips, .tl-col .req { grid-column: 1 / -1; }
+
+  .sum { grid-template-columns: 1fr; gap: calc(var(--u) * 1.6); align-content: start; }
+  .card { padding: calc(var(--u) * 2); display: grid; grid-template-columns: auto 1fr; column-gap: calc(var(--u) * 2); align-items: center; }
+  .card .n { grid-row: span 2; font-size: calc(var(--u) * 7.5); }
+  .card .s { margin-top: 0; padding-top: 0; }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  body { padding-block: 6px; gap: 6px; }
+  .player { width: min(100%, calc((100svh - 72px) * 16 / 9)); gap: 6px; }
+  .btn { width: 36px; height: 36px; }
+  .btn.primary { width: 40px; height: 40px; }
+}
+
+/* ---------- Movimiento reducido ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .scene.on .a, .scene.on .a *, .scene.on *, .scene.on *::after { animation-duration: 1ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; }
+  .scene.on .seq { display: none; }
+  .scene, .scene.on { transition: none; }
+}
+</style>
+
+<h1 class="sr">Cursos de temporada, Carrera de Contaduría Pública, UMSA</h1>
+
+<div class="player">
+  <div class="stage" id="stage" role="region" aria-roledescription="presentación animada" aria-label="Cursos de temporada">
+    <div class="chrome" aria-hidden="true">
+      <span>Cursos de temporada · <b>CPA</b> · UMSA</span>
+      <span id="ctr">01 / 07</span>
+    </div>
+
+    <!-- 1 -->
+    <section class="scene" data-dur="10000" data-name="¿Qué cambia?">
+      <h2 class="a">¿Qué <em>cambia</em>?</h2>
+      <div class="body s1">
+        <div class="panel a" style="--d:.2s">
+          <span class="label">Antes</span>
+          <div class="tiles" id="s1-before"></div>
+          <p class="cap a" style="--d:2s; margin-bottom:0">Sin límite para adelantar</p>
+        </div>
+        <div class="vs" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M8 24h30M28 13l11 11-11 11"/></svg>
+        </div>
+        <div class="panel a" style="--d:2.9s">
+          <span class="label">Ahora</span>
+          <div class="clusters">
+            <div class="cluster">
+              <div class="tiles" id="s1-blue"></div>
+              <span class="count b a" style="--d:5.4s">22</span>
+            </div>
+            <div class="cluster">
+              <div class="tiles" id="s1-yel"></div>
+              <span class="count y a" style="--d:5.6s">21</span>
+            </div>
+          </div>
+          <div class="limit">
+            <span class="cupo a" style="--anim:pop; --d:6.4s"></span>
+            <span class="cupo a" style="--anim:pop; --d:6.6s"></span>
+            <p class="cap a" style="--d:6.9s">2 cupos por verano</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="scene" data-dur="12000" data-name="Las 43 materias">
+      <h2 class="a">Las <em>43</em> materias</h2>
+      <div class="body s2">
+        <div class="grp">
+          <header class="a" style="--d:.5s">
+            <span class="big cnt" data-k="600:0,1800:22">22</span>
+            <div><b>Libre acceso</b><small>Con prerrequisitos</small></div>
+          </header>
+          <div class="sub">
+            <span class="label a" style="--d:.9s">Áreas · 14</span>
+            <div class="grid5" id="s2-areas"></div>
+          </div>
+          <div class="sub">
+            <span class="label a" style="--d:2s">CPA · 80 h · 8</span>
+            <div class="grid5" id="s2-cpa80"></div>
+          </div>
+          <p class="note a" style="--d:5.6s"><i></i>1.º año: solo nivelar</p>
+        </div>
+        <div class="grp yel">
+          <header class="a" style="--d:3s">
+            <span class="big cnt" data-k="3100:0,4300:21">21</span>
+            <div><b>Solo recuperación</b><small>&nbsp;</small></div>
+          </header>
+          <div class="sub">
+            <span class="label a" style="--d:3.3s">CPA · 160 h · 21</span>
+            <div class="grid5" id="s2-cpa160"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="scene" data-dur="14000" data-name="2 cupos por verano">
+      <h2 class="a"><em>2 cupos</em> por verano</h2>
+      <div class="body s3">
+        <div class="frame a" style="--d:.4s">
+          <span class="label">Mín. 8 semanas</span>
+          <div class="slots">
+            <div class="slot">
+              <span class="chip b fill seq" style="--d:1.6s; --e:4.1s">MAT-201</span>
+              <span class="chip b fill seq" style="--d:4.6s; --e:7.1s">ADM-201</span>
+              <span class="chip y fill keep" style="--d:7.6s">CPA-201</span>
+              <span class="label lbl">Cupo 1</span>
+            </div>
+            <div class="slot">
+              <span class="chip b fill seq" style="--d:1.9s; --e:4.1s">ECO-201</span>
+              <span class="chip y fill seq" style="--d:4.9s; --e:7.1s">CPA-302</span>
+              <span class="chip y fill keep" style="--d:7.9s">CPA-302</span>
+              <span class="label lbl">Cupo 2</span>
+            </div>
+            <div class="bouncer">
+              <span class="chip b">DER-201
+                <span class="nope a" style="--anim:pop; --d:11.3s; --t:.4s" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+              </span>
+              <span class="label lbl a" style="--d:11.5s">No permitido</span>
+            </div>
+          </div>
+        </div>
+        <div class="combos">
+          <div class="combo" style="--d:2.4s; --e:4.3s"><i class="mini b"></i><span class="plus">+</span><i class="mini b"></i><svg class="ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg></div>
+          <div class="combo" style="--d:5.4s; --e:7.3s"><i class="mini b"></i><span class="plus">+</span><i class="mini y"></i><svg class="ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg></div>
+          <div class="combo last" style="--d:8.4s"><i class="mini y"></i><span class="plus">+</span><i class="mini y"></i><svg class="ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg></div>
+          <div class="legend a" style="--d:1s">
+            <span><i style="background:var(--b2)"></i>Adelantar o nivelar</span>
+            <span><i style="background:var(--y1)"></i>Recuperar</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section class="scene" data-dur="11500" data-name="Condición de recuperación">
+      <h2 class="a">Condición de <em>recuperación</em></h2>
+      <div class="body flow">
+        <div class="node a" style="--d:.5s">
+          <span class="chip y">CPA-301</span>
+          <span class="hrs">160 h</span>
+          <span class="stamp">Reprobada</span>
+        </div>
+        <div class="conn a" style="--d:2s"></div>
+        <div class="node gauge a" id="g4" style="--d:2.3s">
+          <span class="label">Nota previa</span>
+          <span class="num"><span class="cnt" data-k="0:0,2700:0,3800:42,7600:42,8400:22">22</span><small>/100</small></span>
+          <div class="bar"><span class="fillbar"></span><span class="th"><span>30</span></span></div>
+        </div>
+        <div class="conn a" style="--d:3s"></div>
+        <div class="outs">
+          <div class="out yes"><span class="k">≥ 30</span>Recupera en verano</div>
+          <div class="out no"><span class="k">&lt; 30</span>Sin verano</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section class="scene" data-dur="13000" data-name="Gestión ordinaria">
+      <h2 class="a">En la <em>gestión ordinaria</em></h2>
+      <div class="body s5">
+        <div class="colh a" style="grid-column:1; --d:.4s"><span class="label">Verano 1.º</span></div>
+        <div class="colh a" style="grid-column:3; --d:.5s"><span class="label">2.º año</span><span class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+        <div class="colh a" style="grid-column:5; --d:.6s"><span class="label">Luego</span></div>
+
+        <div class="course a" style="grid-column:1; --d:1s">
+          <span class="tx"><span class="code">MAT-201</span><span class="nm">Álgebra Lineal</span></span>
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg>
+        </div>
+        <div class="arw a" style="grid-column:2; --d:2.1s"></div>
+        <div class="course locked" style="grid-column:3; --d:2.4s; --l:3.2s">
+          <span class="tx"><span class="code">MAT-301</span><span class="nm">Estadística · 3.º</span></span>
+          <svg class="ic lock" viewBox="0 0 24 24"><path class="shackle" d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="currentColor" stroke-width="2.4"/><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/></svg>
+          <span class="badge a" style="--d:4.6s" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg></span>
+        </div>
+        <div class="arw a" style="grid-column:4; --d:5.2s"></div>
+        <div class="course locked" style="grid-column:5; --d:5.5s; --l:6.2s">
+          <span class="tx"><span class="code">MAT-401</span></span>
+          <svg class="ic lock" viewBox="0 0 24 24"><path class="shackle" d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="currentColor" stroke-width="2.4"/><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/></svg>
+          <span class="req">+ MAT-102</span>
+        </div>
+
+        <div class="course a" style="grid-column:1; --d:7.2s">
+          <span class="tx"><span class="code">ADM-201</span></span>
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg>
+        </div>
+        <div class="arw a" style="grid-column:2; --d:7.8s"></div>
+        <div class="course locked" style="grid-column:3; --d:8.1s; --l:8.7s">
+          <span class="tx"><span class="code">ADM-301</span></span>
+          <svg class="ic lock" viewBox="0 0 24 24"><path class="shackle" d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="currentColor" stroke-width="2.4"/><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/></svg>
+        </div>
+
+        <div class="course a" style="grid-column:1; --d:9.4s">
+          <span class="tx"><span class="code">ECO-201</span></span>
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg>
+        </div>
+        <div class="arw a" style="grid-column:2; --d:10s"></div>
+        <div class="course locked" style="grid-column:3; --d:10.3s; --l:10.9s">
+          <span class="tx"><span class="code">ECO-301</span></span>
+          <svg class="ic lock" viewBox="0 0 24 24"><path class="shackle" d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="currentColor" stroke-width="2.4"/><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/></svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section class="scene" data-dur="14000" data-name="Qué adelantar">
+      <h2 class="a">Qué <span class="bl">adelantar</span> en cada verano</h2>
+      <div class="body tl">
+        <div class="tl-line a" style="--d:.4s"></div>
+        <div class="tl-col a" style="--d:.8s">
+          <span class="tl-node">1.º <span>→</span> 2.º</span>
+          <div class="cupos" style="--p:3.4s"><i class="cupo"></i><i class="cupo"></i></div>
+          <div class="chips" data-chips="ADM-201 DER-201 ECO-201 MAT-201 CPA-204" data-d="1.4"></div>
+        </div>
+        <div class="tl-col a" style="--d:3.4s">
+          <span class="tl-node">2.º <span>→</span> 3.º</span>
+          <div class="cupos" style="--p:6s"><i class="cupo"></i><i class="cupo"></i></div>
+          <div class="chips" data-chips="ADM-301 ECO-301 MAT-301 MAT-401*" data-d="4"></div>
+          <span class="req a" style="--d:5.6s">* si aprobó MAT-301</span>
+        </div>
+        <div class="tl-col a" style="--d:6.6s">
+          <span class="tl-node">3.º <span>→</span> 4.º</span>
+          <div class="cupos" style="--p:8.6s"><i class="cupo"></i><i class="cupo"></i></div>
+          <div class="chips" data-chips="CPA-406 MAT-401" data-d="7.2"></div>
+          <span class="req a" style="--d:8s">CPA-406 ← CPA-301 a 304<br>MAT-401 ← MAT-102, MAT-301</span>
+        </div>
+        <div class="tl-col a" style="--d:9.2s">
+          <span class="tl-node">4.º <span>→</span> 5.º</span>
+          <div class="cupos" style="--p:11.2s"><i class="cupo"></i><i class="cupo"></i></div>
+          <div class="chips" data-chips="CPA-506 CPA-507 CPA-508 CPA-509 CPA-510" data-d="9.8"></div>
+          <span class="req a" style="--d:10.8s">← CPA-401 a 408</span>
+        </div>
+      </div>
+      <div class="foot a" style="--d:12s">
+        <span><i class="cupo"></i>Cupo</span>
+        <span>Con el año anterior aprobado</span>
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section class="scene" data-dur="9000" data-name="Resumen">
+      <h2 class="a">Resumen</h2>
+      <div class="body sum">
+        <div class="card blue a" style="--d:.5s">
+          <span class="n cnt" data-k="600:0,1700:22">22</span>
+          <span class="l">Se pueden adelantar</span>
+          <span class="s">Áreas + CPA de 80 h</span>
+        </div>
+        <div class="card ring a" style="--d:1.6s">
+          <span class="n cnt" data-k="1700:0,2800:21">21</span>
+          <span class="l">Solo se recuperan</span>
+          <span class="s">CPA 160 h · nota ≥ 30/100</span>
+        </div>
+        <div class="card solid a" style="--d:2.8s">
+          <span class="n cnt" data-k="2900:0,3500:2">2</span>
+          <span class="l">Cupos por verano</span>
+          <span class="s">Incluye recuperación</span>
+        </div>
+      </div>
+      <p class="src a" style="--d:4s; margin:0">Estudiantes regulares · Res. HCU N.º 093/2006</p>
+    </section>
+  </div>
+
+  <div class="bar-ctl">
+    <button class="btn" id="prev" type="button" aria-label="Escena anterior"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2.4v14H6zM20 5v14L9.5 12z"/></svg></button>
+    <button class="btn primary" id="play" type="button" aria-label="Pausar"><svg viewBox="0 0 24 24" fill="currentColor" id="play-ic"><path d="M7 5h3.6v14H7zM13.4 5H17v14h-3.6z"/></svg></button>
+    <button class="btn" id="next" type="button" aria-label="Escena siguiente"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.6 5H18v14h-2.4zM4 5v14l10.5-7z"/></svg></button>
+    <button class="btn" id="restart" type="button" aria-label="Reiniciar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/></svg></button>
+    <div class="prog" id="prog"></div>
+    <span class="now" id="now" aria-live="polite"></span>
+  </div>
+</div>
+
+<script>
+(() => {
+  const AREAS = ['ADM-101','ADM-201','ADM-301','DER-101','DER-102','DER-201','ECO-101','ECO-201','ECO-301','MAT-101','MAT-102','MAT-201','MAT-301','MAT-401'];
+  const CPA80 = ['102','204','406','506','507','508','509','510'].map(n => 'CPA-' + n);
+  const CPA160 = ['101','201','202','203','301','302','303','304','305','401','402','403','404','405','407','408','501','502','503','504','505'].map(n => 'CPA-' + n);
+  const FIRST = new Set(['ADM-101','DER-101','DER-102','ECO-101','MAT-101','MAT-102','CPA-102']);
+  // Orden de la malla curricular, de 1.º a 5.º año
+  const MALLA = ['CPA-101','CPA-102','ADM-101','DER-101','DER-102','ECO-101','MAT-101','MAT-102',
+    'CPA-201','CPA-202','CPA-203','CPA-204','ADM-201','DER-201','ECO-201','MAT-201',
+    'CPA-301','CPA-302','CPA-303','CPA-304','CPA-305','ADM-301','ECO-301','MAT-301',
+    'CPA-401','CPA-402','CPA-403','CPA-404','CPA-405','CPA-406','CPA-407','CPA-408','MAT-401',
+    'CPA-501','CPA-502','CPA-503','CPA-504','CPA-505','CPA-506','CPA-507','CPA-508','CPA-509','CPA-510'];
+
+  const $ = (s, r = document) => r.querySelector(s);
+  const mk = (tag, cls, d, txt) => {
+    const e = document.createElement(tag);
+    e.className = cls;
+    e.style.setProperty('--d', d.toFixed(2) + 's');
+    if (txt) e.textContent = txt;
+    return e;
+  };
+  const tiles = (host, codes, cls, d0, step) => codes.forEach((c, k) => {
+    const e = mk('span', `tile ${cls} a`, d0 + k * step);
+    e.title = c;
+    e.style.setProperty('--anim', 'pop');
+    e.style.setProperty('--t', '.45s');
+    host.append(e);
+  });
+  const chips = (host, codes, cls, d0, step) => codes.forEach((c, k) => {
+    const dashed = c.endsWith('*');
+    const e = mk('span', `chip ${dashed ? 'dash' : cls}${FIRST.has(c) ? ' first' : ''} a`, d0 + k * step, c);
+    e.style.setProperty('--anim', 'pop');
+    e.style.setProperty('--t', '.45s');
+    host.append(e);
+  });
+
+  tiles($('#s1-before'), MALLA, 'n', .4, .03);
+  tiles($('#s1-blue'), [...AREAS, ...CPA80], 'b', 3.3, .045);
+  tiles($('#s1-yel'), CPA160, 'y', 4.4, .045);
+  chips($('#s2-areas'), AREAS, 'b', 1.0, .06);
+  chips($('#s2-cpa80'), CPA80, 'b', 2.1, .07);
+  chips($('#s2-cpa160'), CPA160, 'y', 3.4, .05);
+  document.querySelectorAll('[data-chips]').forEach(h => chips(h, h.dataset.chips.split(' '), 'b', +h.dataset.d, .12));
+
+  // ---------- Reproductor ----------
+  const stage = $('#stage');
+  const scenes = [...stage.querySelectorAll('.scene')];
+  const durs = scenes.map(s => +s.dataset.dur);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  const prog = $('#prog');
+  const segs = scenes.map((s, k) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'seg';
+    b.setAttribute('aria-label', `Escena ${k + 1}: ${s.dataset.name}`);
+    b.innerHTML = '<span><i></i></span>';
+    b.addEventListener('click', () => { go(k); setPlaying(true); });
+    prog.append(b);
+    return b;
+  });
+  const counters = scenes.map(s => [...s.querySelectorAll('.cnt')].map(el => ({
+    el,
+    keys: el.dataset.k.split(',').map(p => p.split(':').map(Number)),
+    gauge: el.closest('.gauge')
+  })));
+
+  let i = 0, t = 0, playing = true, last = null;
+  const pad = n => String(n).padStart(2, '0');
+
+  function go(n) {
+    i = Math.max(0, Math.min(n, scenes.length - 1));
+    t = 0;
+    scenes.forEach((s, k) => { s.classList.remove('on'); s.setAttribute('aria-hidden', String(k !== i)); });
+    void stage.offsetWidth;
+    scenes[i].classList.add('on');
+    $('#ctr').textContent = `${pad(i + 1)} / ${pad(scenes.length)}`;
+    $('#now').innerHTML = `<b>${i + 1}/${scenes.length}</b> · ${scenes[i].dataset.name}`;
+    segs.forEach((b, k) => b.classList.toggle('cur', k === i));
+    render();
+  }
+
+  function setPlaying(p) {
+    if (p && i === scenes.length - 1 && t >= durs[i]) go(0);
+    playing = p;
+    stage.classList.toggle('paused', !p);
+    $('#play').setAttribute('aria-label', p ? 'Pausar' : 'Reproducir');
+    $('#play-ic').innerHTML = p
+      ? '<path d="M7 5h3.6v14H7zM13.4 5H17v14h-3.6z"/>'
+      : '<path d="M8 5v14l11-7z"/>';
+  }
+
+  function valueAt(keys, ms) {
+    if (reduce.matches || ms >= keys[keys.length - 1][0]) return keys[keys.length - 1][1];
+    if (ms <= keys[0][0]) return keys[0][1];
+    for (let k = 1; k < keys.length; k++) {
+      const [t1, v1] = keys[k], [t0, v0] = keys[k - 1];
+      if (ms <= t1) {
+        const p = t1 === t0 ? 1 : (ms - t0) / (t1 - t0);
+        return Math.round(v0 + (v1 - v0) * (1 - Math.pow(1 - p, 3)));
+      }
+    }
+    return keys[keys.length - 1][1];
+  }
+
+  function render() {
+    segs.forEach((b, k) => b.firstChild.firstChild.style.setProperty('--p', k < i ? 1 : k > i ? 0 : Math.min(t / durs[i], 1)));
+    counters[i].forEach(c => {
+      const v = valueAt(c.keys, t);
+      c.el.textContent = v;
+      if (c.gauge) {
+        c.gauge.style.setProperty('--v', v);
+        c.gauge.classList.toggle('pass', v >= 30);
+      }
+    });
+  }
+
+  function tick(now) {
+    const dt = last == null ? 0 : Math.min(now - last, 100);
+    last = now;
+    if (playing) {
+      t += dt;
+      if (t >= durs[i]) {
+        if (i < scenes.length - 1) go(i + 1);
+        else { t = durs[i]; setPlaying(false); }
+      }
+    }
+    render();
+    requestAnimationFrame(tick);
+  }
+
+  $('#play').addEventListener('click', () => setPlaying(!playing));
+  $('#prev').addEventListener('click', () => { go(i - 1); setPlaying(true); });
+  $('#next').addEventListener('click', () => { go(i + 1); setPlaying(true); });
+  $('#restart').addEventListener('click', () => { go(0); setPlaying(true); });
+  document.addEventListener('keydown', e => {
+    if (e.target.closest && e.target.closest('button') && (e.key === ' ' || e.key === 'Enter')) return;
+    if (e.key === ' ') { e.preventDefault(); setPlaying(!playing); }
+    else if (e.key === 'ArrowRight') { go(i + 1); setPlaying(true); }
+    else if (e.key === 'ArrowLeft') { go(i - 1); setPlaying(true); }
+  });
+
+  window.__cursos = { go, setPlaying, seek: ms => { t = ms; render(); } };
+  go(0);
+  setPlaying(true);
+  requestAnimationFrame(tick);
+})();
+</script>
